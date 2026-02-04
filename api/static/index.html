@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantScale AI</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f1117;
+            --card-bg: #1e212b;
+            --accent: #3b82f6;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .input-area {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        textarea {
+            width: 100%;
+            background-color: #0f1117;
+            border: 1px solid #2d3748;
+            color: var(--text-primary);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            resize: none;
+            height: 80px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+            color: var(--accent);
+        }
+
+        #results {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .report-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #2d3748;
+        }
+
+        h3 {
+            margin-top: 0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .metric {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .narrative-box {
+            background-color: #1e212b;
+            border-left: 4px solid var(--success);
+            padding: 1.5rem;
+            border-radius: 0 12px 12px 0;
+            line-height: 1.6;
+        }
+
+        .holding-list {
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        .holding-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* PDF Export Styles (Professional Document Mode) */
+        .pdf-mode {
+            /* CRITICAL: Override Variables to Jet Black */
+            --bg-color: #ffffff !important;
+            --card-bg: transparent !important;
+            --text-primary: #000000 !important;
+            --text-secondary: #000000 !important;
+            /* Force subtitles to black */
+            --accent: #000000 !important;
+
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            padding: 40px;
+        }
+
+        .pdf-mode .report-grid {
+            gap: 2rem;
+        }
+
+        .pdf-mode .card {
+            background-color: transparent !important;
+            border: 1px solid #000000 !important;
+            /* Sharp black border */
+            box-shadow: none !important;
+            border-radius: 4px !important;
+            /* Sharper corners */
+            padding: 1.5rem !important;
+            color: #000000 !important;
+        }
+
+        .pdf-mode h1 {
+            background: none !important;
+            -webkit-text-fill-color: #000000 !important;
+            color: #000000 !important;
+            font-size: 24pt !important;
+            margin-bottom: 5px !important;
+        }
+
+        .pdf-mode .subtitle {
+            color: #333333 !important;
+            font-size: 14pt !important;
+            margin-bottom: 20px !important;
+        }
+
+        .pdf-mode h1,
+        .pdf-mode h2,
+        .pdf-mode h3,
+        .pdf-mode p {
+            color: #000000 !important;
+        }
+
+        .pdf-mode h3 {
+            color: #000000 !important;
+            font-weight: 800 !important;
+            border-bottom: 1px solid #000000;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            font-size: 12pt !important;
+        }
+
+        .pdf-mode .metric {
+            color: #000000 !important;
+            font-size: 28pt !important;
+        }
+
+        .pdf-mode .metric-label {
+            color: #333333 !important;
+            font-size: 10pt !important;
+            font-weight: 500 !important;
+        }
+
+        .pdf-mode .holding-item {
+            border-bottom: 1px solid #dddddd !important;
+            color: #000000 !important;
+            font-size: 10pt !important;
+        }
+
+        .pdf-mode .narrative-box {
+            background-color: transparent !important;
+            /* No grey box */
+            color: #000000 !important;
+            border-left: 4px solid #000000 !important;
+            /* Black accent */
+            padding-left: 15px !important;
+            font-size: 11pt !important;
+            line-height: 1.5 !important;
+            text-align: justify;
+        }
+
+        /* Force Chart Legends to be dark (might trigger re-render if I could, but simple CSS helps) */
+        .pdf-mode canvas {
+            filter: contrast(1.2);
+            /* Slight boost */
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>QuantScale AI</h1>
+            <div class="subtitle">Direct Indexing & Attribution Engine</div>
+        </header>
+
+        <div class="input-area">
+            <textarea id="userInput"
+                placeholder="Describe your goal, e.g., 'Optimize my $100k portfolio but exclude the Energy and Utilities sectors.'"></textarea>
+            <button class="btn-primary" onclick="runOptimization()">Generate Portfolio Strategy</button>
+        </div>
+
+        <div class="loader" id="loader">
+            Running Convex Optimization & AI Model...
+        </div>
+
+        <div id="results">
+            <!-- Download Button -->
+            <div style="text-align: right; margin-bottom: 1rem;">
+                <button onclick="downloadPDF()"
+                    style="background: transparent; border: 1px solid #3b82f6; color: #3b82f6; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-family: 'Inter', sans-serif;">
+                    📄 Generate Institutional Report
+                </button>
+            </div>
+
+            <!-- Top Metrics -->
+            <div class="report-grid">
+                <div class="card">
+                    <h3>Projected Tracking Error</h3>
+                    <div class="metric" id="teMetric">0.00%</div>
+                    <div class="metric-label">vs S&P 500 Benchmark</div>
+                </div>
+                <div class="card">
+                    <h3>Excluded Sectors</h3>
+                    <div class="metric" id="excludedMetric" style="color: #ef4444;">None</div>
+                    <div class="metric-label">Constraints applied</div>
+                </div>
+            </div>
+
+            <!-- AI Commentary -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <h3>AI Performance Attribution</h3>
+                <div id="aiNarrative" class="narrative-box"></div>
+            </div>
+
+            <!-- Holdings & Chart -->
+            <div class="report-grid">
+                <div class="card">
+                    <h3>Top Holdings</h3>
+                    <div class="holding-list" id="holdingsList"></div>
+                </div>
+                <div class="card">
+                    <h3>Sector Allocation</h3>
+                    <canvas id="allocationChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function downloadPDF() {
+            const element = document.getElementById('results');
+            const btn = element.querySelector('button');
+
+            // 1. Switch to PDF Mode
+            element.classList.add('pdf-mode');
+            if (btn) btn.style.display = 'none';
+
+            // 2. Force Chart to Black Text (No Animation)
+            if (myChart) {
+                myChart.options.plugins.legend.labels.color = '#000000';
+                myChart.options.scales = myChart.options.scales || {};
+                myChart.update('none');
+            }
+
+            // 3. WAIT for Canvas Repaint (The "Freeze" Strategy)
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const opt = {
+                margin: 1,
+                filename: 'QuantScale_Institutional_Report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 3, backgroundColor: '#ffffff', useCORS: true, letterRendering: true },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            // 4. Generate & Save
+            await html2pdf().set(opt).from(element).save();
+
+            // 5. Cleanup / Restore
+            element.classList.remove('pdf-mode');
+            if (btn) btn.style.display = 'inline-block';
+
+            // Restore Chart Colors
+            if (myChart) {
+                myChart.options.plugins.legend.labels.color = '#94a3b8';
+
+                // Revert to animation default or none? 
+                // Using 'none' to snap back instantly.
+                myChart.update('none');
+            }
+        }
+
+        async function runOptimization() {
+            const input = document.getElementById('userInput').value;
+            const loader = document.getElementById('loader');
+            const results = document.getElementById('results');
+
+            // UI Reset
+            results.style.display = 'none';
+            loader.style.display = 'block';
+
+            // 1. Simple Intent Parsing (Client-Side for Demo Speed)
+            // 1. Simple Intent Parsing (Client-Side for Demo Speed)
+            const sectorKeywords = {
+                "Energy": ["energy", "oil", "gas"],
+                "Technology": ["technology", "tech", "software", "it"],
+                "Financials": ["financials", "finance", "banks"],
+                "Healthcare": ["healthcare", "health", "pharma"],
+                "Utilities": ["utilities", "utility"],
+                "Materials": ["materials", "mining"],
+                "Consumer Discretionary": ["consumer", "retail", "discretionary"], // Note: Amazon is here
+                "Real Estate": ["real estate", "reit"],
+                "Communication Services": ["communication", "media", "telecom"] // Google/Meta/Netflix
+            };
+
+            // Single Stock Mapping (Common FAANG+ names)
+            const stockKeywords = {
+                "AMZN": ["amazon"],
+                "AAPL": ["apple", "iphone"],
+                "MSFT": ["microsoft", "windows"],
+                "GOOGL": ["google", "alphabet"],
+                "META": ["meta", "facebook"],
+                "TSLA": ["tesla"],
+                "NVDA": ["nvidia", "chips"],
+                "NFLX": ["netflix"]
+            };
+
+            let excluded = [];
+            let excludedTickers = [];
+            const lowerInput = input.toLowerCase();
+
+            // Check Sectors
+            for (const [sector, keywords] of Object.entries(sectorKeywords)) {
+                if (keywords.some(k => lowerInput.includes(k))) {
+                    // Avoid double counting if user said "Amazon" (Consumer) but didn't mean the whole sector?
+                    // For now, standard inclusion
+                    excluded.push(sector);
+                }
+            }
+
+            // Check Tickers
+            for (const [ticker, keywords] of Object.entries(stockKeywords)) {
+                if (keywords.some(k => lowerInput.includes(k))) {
+                    excludedTickers.push(ticker);
+                }
+            }
+
+            // Default fallback if query is generic
+            if (excluded.length === 0 && excludedTickers.length === 0 && input.length > 5) {
+                // If user typed something but matched nothing, maybe assume No Exclusions for now or ask? 
+                // For demo, we send "None" effectively.
+            }
+
+            const payload = {
+                "client_id": "Web_User",
+                "excluded_sectors": excluded,
+                "excluded_tickers": excludedTickers,
+                "initial_investment": 100000
+            };
+
+            try {
+                const response = await fetch('/optimize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                // Display Results
+                const allExclusions = [...excluded, ...excludedTickers];
+                displayData(data, allExclusions);
+                loader.style.display = 'none';
+                results.style.display = 'block';
+
+            } catch (error) {
+                alert("Optimization Failed: " + error);
+                loader.style.display = 'none';
+            }
+        }
+
+        function displayData(data, excluded) {
+            // Metrics
+            document.getElementById('teMetric').innerText = (data.tracking_error * 100).toFixed(4) + "%";
+            document.getElementById('excludedMetric').innerText = excluded.length > 0 ? excluded.join(", ") : "None";
+
+            // AI Text - Markdown clean
+            // Simple replace of **bold** with <b>
+            let narrative = data.attribution_narrative || "No commentary generated.";
+            narrative = narrative.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+            document.getElementById('aiNarrative').innerHTML = narrative;
+
+            // Holdings List (Top 10)
+            const listObj = document.getElementById('holdingsList');
+            listObj.innerHTML = '';
+            // Sort by weight
+            const sorted = Object.entries(data.allocations).sort((a, b) => b[1] - a[1]).slice(0, 15);
+
+            sorted.forEach(([ticker, weight]) => {
+                const div = document.createElement('div');
+                div.className = 'holding-item';
+                div.innerHTML = `<span>${ticker}</span><span>${(weight * 100).toFixed(2)}%</span>`;
+                listObj.appendChild(div);
+            });
+
+            // Chart
+            renderChart(data.allocations);
+        }
+
+        let myChart = null;
+        function renderChart(allocations) {
+            const ctx = document.getElementById('allocationChart').getContext('2d');
+            if (myChart) myChart.destroy();
+
+            // Simplification: In a real app we'd map Ticker -> Sector here 
+            // For now, let's just show Top 5 Tickers vs "Others"
+            const sorted = Object.entries(allocations).sort((a, b) => b[1] - a[1]);
+            const top5 = sorted.slice(0, 5);
+            const others = sorted.slice(5).reduce((acc, curr) => acc + curr[1], 0);
+
+            const labels = top5.map(x => x[0]).concat(["Others"]);
+            const data = top5.map(x => x[1]).concat([others]);
+
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#475569'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

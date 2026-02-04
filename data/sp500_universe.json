@@ -1,0 +1,266 @@
+[
+    {
+        "ticker": "AAPL",
+        "sector": "Information Technology"
+    },
+    {
+        "ticker": "MSFT",
+        "sector": "Information Technology"
+    },
+    {
+        "ticker": "NVDA",
+        "sector": "Information Technology"
+    },
+    {
+        "ticker": "AVGO",
+        "sector": "Information Technology"
+    },
+    {
+        "ticker": "ADBE",
+        "sector": "Information Technology"
+    },
+    {
+        "ticker": "CRM",
+        "sector": "Information Technology"
+    },
+    {
+        "ticker": "CSCO",
+        "sector": "Information Technology"
+    },
+    {
+        "ticker": "AMD",
+        "sector": "Information Technology"
+    },
+    {
+        "ticker": "INTC",
+        "sector": "Information Technology"
+    },
+    {
+        "ticker": "AMZN",
+        "sector": "Consumer Discretionary"
+    },
+    {
+        "ticker": "TSLA",
+        "sector": "Consumer Discretionary"
+    },
+    {
+        "ticker": "HD",
+        "sector": "Consumer Discretionary"
+    },
+    {
+        "ticker": "MCD",
+        "sector": "Consumer Discretionary"
+    },
+    {
+        "ticker": "NKE",
+        "sector": "Consumer Discretionary"
+    },
+    {
+        "ticker": "LOW",
+        "sector": "Consumer Discretionary"
+    },
+    {
+        "ticker": "SBUX",
+        "sector": "Consumer Discretionary"
+    },
+    {
+        "ticker": "GOOGL",
+        "sector": "Communication Services"
+    },
+    {
+        "ticker": "GOOG",
+        "sector": "Communication Services"
+    },
+    {
+        "ticker": "META",
+        "sector": "Communication Services"
+    },
+    {
+        "ticker": "NFLX",
+        "sector": "Communication Services"
+    },
+    {
+        "ticker": "DIS",
+        "sector": "Communication Services"
+    },
+    {
+        "ticker": "CMCSA",
+        "sector": "Communication Services"
+    },
+    {
+        "ticker": "VZ",
+        "sector": "Communication Services"
+    },
+    {
+        "ticker": "T",
+        "sector": "Communication Services"
+    },
+    {
+        "ticker": "BRK-B",
+        "sector": "Financials"
+    },
+    {
+        "ticker": "JPM",
+        "sector": "Financials"
+    },
+    {
+        "ticker": "V",
+        "sector": "Financials"
+    },
+    {
+        "ticker": "MA",
+        "sector": "Financials"
+    },
+    {
+        "ticker": "BAC",
+        "sector": "Financials"
+    },
+    {
+        "ticker": "WFC",
+        "sector": "Financials"
+    },
+    {
+        "ticker": "MS",
+        "sector": "Financials"
+    },
+    {
+        "ticker": "GS",
+        "sector": "Financials"
+    },
+    {
+        "ticker": "BLK",
+        "sector": "Financials"
+    },
+    {
+        "ticker": "UNH",
+        "sector": "Health Care"
+    },
+    {
+        "ticker": "LLY",
+        "sector": "Health Care"
+    },
+    {
+        "ticker": "JNJ",
+        "sector": "Health Care"
+    },
+    {
+        "ticker": "MRK",
+        "sector": "Health Care"
+    },
+    {
+        "ticker": "ABBV",
+        "sector": "Health Care"
+    },
+    {
+        "ticker": "PFE",
+        "sector": "Health Care"
+    },
+    {
+        "ticker": "AMGN",
+        "sector": "Health Care"
+    },
+    {
+        "ticker": "TMO",
+        "sector": "Health Care"
+    },
+    {
+        "ticker": "PG",
+        "sector": "Consumer Staples"
+    },
+    {
+        "ticker": "COST",
+        "sector": "Consumer Staples"
+    },
+    {
+        "ticker": "PEP",
+        "sector": "Consumer Staples"
+    },
+    {
+        "ticker": "KO",
+        "sector": "Consumer Staples"
+    },
+    {
+        "ticker": "WMT",
+        "sector": "Consumer Staples"
+    },
+    {
+        "ticker": "PM",
+        "sector": "Consumer Staples"
+    },
+    {
+        "ticker": "XOM",
+        "sector": "Energy"
+    },
+    {
+        "ticker": "CVX",
+        "sector": "Energy"
+    },
+    {
+        "ticker": "COP",
+        "sector": "Energy"
+    },
+    {
+        "ticker": "SLB",
+        "sector": "Energy"
+    },
+    {
+        "ticker": "EOG",
+        "sector": "Energy"
+    },
+    {
+        "ticker": "MPC",
+        "sector": "Energy"
+    },
+    {
+        "ticker": "LIN",
+        "sector": "Materials"
+    },
+    {
+        "ticker": "SHW",
+        "sector": "Materials"
+    },
+    {
+        "ticker": "FCX",
+        "sector": "Materials"
+    },
+    {
+        "ticker": "CAT",
+        "sector": "Industrials"
+    },
+    {
+        "ticker": "UNP",
+        "sector": "Industrials"
+    },
+    {
+        "ticker": "GE",
+        "sector": "Industrials"
+    },
+    {
+        "ticker": "HON",
+        "sector": "Industrials"
+    },
+    {
+        "ticker": "NEE",
+        "sector": "Utilities"
+    },
+    {
+        "ticker": "DUK",
+        "sector": "Utilities"
+    },
+    {
+        "ticker": "SO",
+        "sector": "Utilities"
+    },
+    {
+        "ticker": "PLD",
+        "sector": "Real Estate"
+    },
+    {
+        "ticker": "AMT",
+        "sector": "Real Estate"
+    },
+    {
+        "ticker": "EQIX",
+        "sector": "Real Estate"
+    }
+]
