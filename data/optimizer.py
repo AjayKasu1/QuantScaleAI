@@ -27,7 +27,8 @@ class PortfolioOptimizer:
                            benchmark_weights: pd.DataFrame,
                            sector_map: Dict[str, str],
                            excluded_sectors: List[str],
-                           excluded_tickers: List[str] = None) -> OptimizationResult:
+                           excluded_tickers: List[str] = None,
+                           max_weight: float = None) -> OptimizationResult:
         """
         Solves the tracking error minimization problem.
         
@@ -100,7 +101,11 @@ class PortfolioOptimizer:
         min_avg_weight = 1.0 / n_active
         dynamic_max = max(0.20, min_avg_weight * 1.5)
         
-        MAX_WEIGHT_LIMIT = dynamic_max
+        if max_weight and max_weight > min_avg_weight:
+             logger.info(f"Applying User-Defined Max Weight: {max_weight}")
+             MAX_WEIGHT_LIMIT = max_weight
+        else:
+             MAX_WEIGHT_LIMIT = dynamic_max
         logger.info(f"DEBUG: Active Assets={n_active}, Min Avg={min_avg_weight:.4f}, Dynamic Max Limit={MAX_WEIGHT_LIMIT:.4f}")
         
         constraints = [

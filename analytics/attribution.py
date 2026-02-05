@@ -87,14 +87,38 @@ class AttributionEngine:
         total_interaction = attr_df['interaction'].sum()
         
         # Calculate Top Contributors/Detractors to active return
-        # Active Weight * Asset Return? Or Contribution to Active Return?
-        # Contribution to Active Return = w_p*r_a - w_b*r_a ...
+        # Active Weight * Asset Return (Truth Table Logic)
         df['active_weight'] = df['wp'] - df['wb']
-        df['contribution'] = df['active_weight'] * df['ret'] # Simple approx
+        df['contribution'] = df['active_weight'] * df['ret']
         
+        # Sort by active contribution
         sorted_contrib = df.sort_values(by='contribution', ascending=False)
-        top_contributors = sorted_contrib.head(5).index.tolist()
-        top_detractors = sorted_contrib.tail(5).index.tolist()
+        
+        def get_status(row):
+            if row['wp'] == 0.0 and row['wb'] > 0.0:
+                return "Excluded" 
+            elif row['wp'] > row['wb']:
+                return "Overweight"
+            elif row['wp'] < row['wb']:
+                return "Underweight"
+            else:
+                return "Neutral"
+
+        def build_truth_table(dataframe, n=5):
+            results = []
+            for ticker, row in dataframe.head(n).iterrows():
+                results.append({
+                    "Ticker": ticker,
+                    "Sector": row['sector'],
+                    "Status": get_status(row),
+                    "Active_Contribution": f"{row['contribution']:.4f}",
+                    "Return": f"{row['ret']:.2%}"
+                })
+            return results
+
+        # Top 5 Winners (Contributors) & Losers (Detractors)
+        top_contributors = build_truth_table(sorted_contrib, 5)
+        top_detractors = build_truth_table(sorted_contrib.sort_values(by='contribution', ascending=True), 5)
         
         # Narrative skeleton (to be filled by AI)
         narrative_raw = (

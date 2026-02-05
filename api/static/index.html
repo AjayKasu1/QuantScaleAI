@@ -443,10 +443,29 @@
                 // For demo, we send "None" effectively.
             }
 
+            // Extract Max Weight (e.g. "limit to 2%", "max weight 5%")
+            let maxWeight = null;
+            // Matches: "limit... 2%" or "weight... 0.05"
+            // Simple Regex: Search for number followed optionally by %
+            const weightMatch = lowerInput.match(/(?:limit|max|weight).*?(\d+(?:\.\d+)?)\s*%/);
+            if (weightMatch) {
+                const val = parseFloat(weightMatch[1]);
+                if (val > 0) {
+                    maxWeight = val / 100.0; // Convert 2% -> 0.02
+                }
+            } else {
+                // Try decimal "0.05"
+                const decimalMatch = lowerInput.match(/(?:limit|max|weight).*?(\d+\.\d+)/);
+                if (decimalMatch) {
+                    maxWeight = parseFloat(decimalMatch[1]);
+                }
+            }
+
             const payload = {
                 "client_id": "Web_User",
                 "excluded_sectors": excluded,
                 "excluded_tickers": excludedTickers,
+                "max_weight": maxWeight,
                 "initial_investment": 100000
             };
 

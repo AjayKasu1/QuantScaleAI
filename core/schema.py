@@ -26,6 +26,7 @@ class OptimizationRequest(BaseModel):
     initial_investment: float = 100000.0
     excluded_sectors: List[str] = Field(default_factory=list, description="List of sectors to exclude (e.g., ['Energy'])")
     excluded_tickers: List[str] = Field(default_factory=list, description="List of specific tickers to exclude (e.g., ['AMZN'])")
+    max_weight: Optional[float] = Field(None, description="Maximum weight for any single asset (e.g., 0.05)")
     benchmark: str = "^GSPC"
 
     class Config:
@@ -92,6 +93,6 @@ class AttributionReport(BaseModel):
     allocation_effect: float
     selection_effect: float
     total_active_return: float
-    top_contributors: List[str]
-    top_detractors: List[str]
+    top_contributors: List[Dict]
+    top_detractors: List[Dict]
     narrative: str

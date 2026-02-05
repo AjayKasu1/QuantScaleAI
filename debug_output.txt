@@ -1,0 +1,21 @@
+/opt/anaconda3/lib/python3.9/site-packages/pandas/core/computation/expressions.py:21: UserWarning: Pandas requires version '2.8.4' or newer of 'numexpr' (version '2.8.1' currently installed).
+  from pandas.core.computation.check import NUMEXPR_INSTALLED
+/opt/anaconda3/lib/python3.9/site-packages/pandas/core/arrays/masked.py:60: UserWarning: Pandas requires version '1.3.6' or newer of 'bottleneck' (version '1.3.4' currently installed).
+  from pandas.core import (
+Testing Attribution Logic...
+
+--- Attribution Report Generated ---
+Total Active Return: -0.0045
+
+[Top Contributors]
+{'Ticker': 'AAPL', 'Sector': 'Technology', 'Status': 'Overweight', 'Active_Contribution': '0.0010', 'Return': '10.00%'}
+{'Ticker': 'GOOG', 'Sector': 'Communication Services', 'Status': 'Neutral', 'Active_Contribution': '-0.0000', 'Return': '-5.00%'}
+{'Ticker': 'MSFT', 'Sector': 'Technology', 'Status': 'Excluded', 'Active_Contribution': '-0.0060', 'Return': '10.00%'}
+
+[Top Detractors]
+{'Ticker': 'MSFT', 'Sector': 'Technology', 'Status': 'Excluded', 'Active_Contribution': '-0.0060', 'Return': '10.00%'}
+{'Ticker': 'GOOG', 'Sector': 'Communication Services', 'Status': 'Neutral', 'Active_Contribution': '-0.0000', 'Return': '-5.00%'}
+{'Ticker': 'AAPL', 'Sector': 'Technology', 'Status': 'Overweight', 'Active_Contribution': '0.0010', 'Return': '10.00%'}
+
+SUCCESS: MSFT correctly identified as Excluded Detractor.
+SUCCESS: AAPL correctly identified as Overweight Contributor.

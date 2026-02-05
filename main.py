@@ -101,7 +101,8 @@ class QuantScaleSystem:
             benchmark_weights=benchmark_weights,
             sector_map=sector_map,
             excluded_sectors=request.excluded_sectors,
-            excluded_tickers=request.excluded_tickers
+            excluded_tickers=request.excluded_tickers,
+            max_weight=request.max_weight
         )
         
         if opt_result.status != "optimal":

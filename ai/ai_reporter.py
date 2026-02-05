@@ -36,6 +36,8 @@ class AIReporter:
         # Get current date in a specific format (e.g., "February 03, 2026")
         current_date = datetime.now().strftime("%B %d, %Y")
         
+        import json
+
         # Format the user prompt
         # We assume ATTRIBUTION_PROMPT_TEMPLATE handles the rest, but we force the date in context
         user_prompt = f"""
@@ -46,8 +48,8 @@ INSTRUCTION: Start your commentary exactly with the header: "Market Commentary -
             total_active_return=attribution_report.total_active_return * 100, # Convert to %
             allocation_effect=attribution_report.allocation_effect * 100,
             selection_effect=attribution_report.selection_effect * 100,
-            top_contributors=", ".join(attribution_report.top_contributors),
-            top_detractors=", ".join(attribution_report.top_detractors),
+            top_contributors=json.dumps(attribution_report.top_contributors, indent=2),
+            top_detractors=json.dumps(attribution_report.top_detractors, indent=2),
             current_date=current_date # Pass date to template
         )
         
