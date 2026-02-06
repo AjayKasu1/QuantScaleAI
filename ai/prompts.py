@@ -51,3 +51,14 @@ Write a "Trailing 30-Day Risk & Performance Attribution" report relative to the 
 
 Write a professional, concise 3-paragraph commentary.
 """
+
+# Passive Mode Template (The "Session Integrity Check")
+PASSIVE_NARRATIVE_TEMPLATE = """
+The portfolio is in a Full Replication state (Tracking Error ≈ 0.00%).
+
+Confirm that active return and tracking error are strictly negligible.
+
+Do NOT use the words 'overweight', 'underweight', 'contributor', or 'detractor'.
+
+State that the portfolio performance is driven entirely by Market Beta and matches the benchmark return exactly.
+"""

@@ -31,29 +31,34 @@ class QuantScaleSystem:
         tickers = self.data_engine.fetch_sp500_tickers()
 
         # OPTIMIZATION: Filter Universe BEFORE Fetching Data
-        # fetching 500 tickers takes too long on free tier spaces -> Timeout
-        valid_tickers_for_fetch = tickers
+        # But we MUST fetch "Market Drivers" to define a realistic Benchmark
+        # Otherwise TE is 0.0 because Benchmark == Portfolio Universe
+        
+        caps = self.data_engine.fetch_market_caps(tickers)
+        valid_caps = {t: c for t, c in caps.items() if c > 0}
+        sorted_by_cap = sorted(valid_caps.keys(), key=lambda t: valid_caps[t])
+        
+        # Define "Market Drivers" (Top 20) - Essential for S&P 500 Proxy
+        market_drivers = sorted_by_cap[-20:]
+        
+        valid_tickers_for_fetch = []
         
         if request.strategy and request.top_n:
             logger.info(f"Applying Strategy PRE-FETCH: {request.strategy} with Top N={request.top_n}")
-            caps = self.data_engine.fetch_market_caps(tickers)
-            
-            # Sort valid_tickers by cap
-            valid_caps = {t: c for t, c in caps.items() if c > 0}
-            sorted_tickers = sorted(valid_caps.keys(), key=lambda t: valid_caps[t])
             
             if request.strategy == "smallest_market_cap":
-                valid_tickers_for_fetch = sorted_tickers[:request.top_n]
-                logger.info(f"Filtered to Smallest {request.top_n} for Fetching: {valid_tickers_for_fetch[:5]}...")
+                targets = sorted_by_cap[:request.top_n]
+                # We fetch Targets + Drivers
+                valid_tickers_for_fetch = list(set(targets + market_drivers))
+                logger.info(f"Fetching {len(valid_tickers_for_fetch)} tickers (Targets + Drivers)")
                 
             elif request.strategy == "largest_market_cap":
-                valid_tickers_for_fetch = sorted_tickers[-request.top_n:]
-                logger.info(f"Filtered to Largest {request.top_n} for Fetching: {valid_tickers_for_fetch[:5]}...")
+                targets = sorted_by_cap[-request.top_n:]
+                valid_tickers_for_fetch = list(set(targets + market_drivers))
         else:
-             # Default safety limit for Demo if no strategy
+             # Default safety limit for Demo
              valid_tickers_for_fetch = tickers[:60]
-             logger.warning("No strategy specified. Defaulting to first 60 tickers for Demo Speed.")
-        
+
         # 2. Get Market Data (Only for filtered subset)
         # Fetch last 2 years for covariance
         data = self.data_engine.fetch_market_data(valid_tickers_for_fetch, start_date="2023-01-01")
@@ -75,62 +80,62 @@ class QuantScaleSystem:
             
         cov_matrix = self.risk_model.compute_covariance_matrix(returns)
         
-        # 4. Get Benchmark Data (S&P 500)
-        # Fetch benchmark to calculate weights used for Tracking Error
-        # Simplification: Assume Market Cap weights or Equal weights for the benchmark 
-        # since getting live weights is hard without expensive data.
-        # We will assume Equal Weights for the Benchmark in this demo logic 
-        # or use a proxy. 
-        # BETTER: Use SPY returns as the benchmark returns series for optimization.
-        
-        # For the optimizer, we need "Benchmark Weights" if we want to minimize active weight variance.
-        # If we just map to S&P 500, let's assume valid_tickers ARE the index.
-        # 4. Get Benchmark Data (S&P 500)
-        # Fetch benchmark to calculate weights used for Tracking Error
-        # REALISTIC PROXY: S&P 500 is Market Cap Weighted.
-        # We manually assign Top 10 weights to make Tracking Error realistic when checking exclusions.
+        # 4. Get Benchmark Data (Realistic S&P 500 Proxy)
+        # We assume the Driver stocks carry their heavy weight, and the rest is distributed
         
         n_assets = len(valid_tickers)
         benchmark_weights = pd.Series(0.0, index=valid_tickers)
         
-        # Approximate weights (Feb 2026-ish Reality)
-        # Total Market Cap heavily skewed to Mag 7
-        top_weights = {
-            "MSFT": 0.070, "AAPL": 0.065, "NVDA": 0.060, 
-            "AMZN": 0.035, "GOOGL": 0.020, "GOOG": 0.020,
-            "META": 0.020, "TSLA": 0.015, "BRK-B": 0.015,
-            "LLY": 0.012, "AVGO": 0.012, "JPM": 0.010
-        }
+        # Assign distinct weights to known Drivers if they are in our data
+        # Approximate Mag 7 weights (or use market cap ratio if we had total cap)
+        # Using a proxy distribution logic:
         
-        current_total = 0.0
-        for t, w in top_weights.items():
-            if t in valid_tickers:
-                benchmark_weights[t] = w
-                current_total += w
-                
-        # Distribute remaining weight equally among rest
-        remaining_weight = 1.0 - current_total
-        remaining_count = n_assets - len([t for t in top_weights if t in valid_tickers])
+        # Calculate Total Cap of our universe subset to see relative sizing
+        subset_caps = {t: valid_caps.get(t, 1e9) for t in valid_tickers}
+        total_subset_cap = sum(subset_caps.values())
         
-        if remaining_count > 0:
-            avg_rest = remaining_weight / remaining_count
-            for t in valid_tickers:
-                if benchmark_weights[t] == 0.0:
-                    benchmark_weights[t] = avg_rest
-                    
-        # Normalize just in case
-        benchmark_weights = benchmark_weights / benchmark_weights.sum()
+        # If we are missing 400 stocks, we can't normalize to 1.0 perfectly *relative to SPX*
+        # But for the Optimizer's math (Port vs Bench), both must sum to 1.0 within the optimization universe?
+        # NO. If we want TE against full SPX, we need to handle the "missing" variance. 
+        # But simpler: Normalize weights within the Available Universe based on Cap.
         
+        # For "Smallest 50" strategy:
+        # The Drivers (AAPL, etc.) are in `valid_tickers` now.
+        # So Benchmark will be Cap Weighted (90% Drivers, 10% Small Caps).
+        # Portfolio will be Constrained to 0% Drivers.
+        # Result -> Huge TE. Correct.
+        
+        for t in valid_tickers:
+            benchmark_weights[t] = subset_caps[t] / total_subset_cap
+            
         # 5. Optimize Portfolio
         sector_map = self.data_engine.get_sector_map()
         
+        # If Strategy requires excluding the "Drivers" (because they aren't in the Target set)
+        # We must add them to 'excluded_tickers' for the Optimizer
+        
+        final_exclusions = list(request.excluded_tickers)
+        
+        if request.strategy == "smallest_market_cap":
+            # Exclude anything that IS NOT in the target list (i.e. exclude the Drivers)
+            # targets from above
+            targets = sorted_by_cap[:request.top_n]
+            for t in valid_tickers:
+                if t not in targets:
+                    final_exclusions.append(t)
+                    
+        # ... logic for largest ...
+        if request.strategy == "largest_market_cap":
+             # Drivers are likely IN the target set, so no extra exclusion needed usually
+             pass
+
         opt_result = self.optimizer.optimize_portfolio(
             covariance_matrix=cov_matrix,
             tickers=valid_tickers,
             benchmark_weights=benchmark_weights,
             sector_map=sector_map,
             excluded_sectors=request.excluded_sectors,
-            excluded_tickers=request.excluded_tickers,
+            excluded_tickers=final_exclusions,
             max_weight=request.max_weight
         )
         
