@@ -12,6 +12,7 @@ class Settings(BaseModel):
     HF_TOKEN: Optional[SecretStr] = Field(default_factory=lambda: SecretStr(os.getenv("HF_TOKEN", "")) if os.getenv("HF_TOKEN") else None, description="Hugging Face API Token")
     
     # Data Configuration
+    DATA_DIR: str = Field(default="./data", description="Directory to store static data files")
     DATA_CACHE_DIR: str = Field(default="./data_cache", description="Directory to store cached market data")
     SECTOR_MAP_FILE: str = Field(default="./data/sector_map.json", description="Path to sector mapping cache")
     
