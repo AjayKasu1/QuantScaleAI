@@ -461,6 +461,27 @@
                 }
             }
 
+            // Extract Strategy (Smallest/Largest)
+            let strategy = null;
+            let topN = null;  // Default to full universe if null
+
+            if (lowerInput.includes("smallest")) {
+                strategy = "smallest_market_cap";
+            } else if (lowerInput.includes("largest")) {
+                strategy = "largest_market_cap";
+            }
+
+            // Extract Number for Top N (e.g. "50 smallest")
+            // Look for number near strategy keywords or just a number if strategy is present
+            if (strategy) {
+                const numberMatch = lowerInput.match(/(\d+)\s*(?:smallest|largest|companies|stocks)/);
+                if (numberMatch) {
+                    topN = parseInt(numberMatch[1]);
+                } else {
+                    topN = 50; // Default default
+                }
+            }
+
             const payload = {
                 "client_id": "Web_User",
                 "excluded_sectors": excluded,
@@ -482,7 +503,7 @@
 
                 // Display Results
                 const allExclusions = [...excluded, ...excludedTickers];
-                displayData(data, allExclusions);
+                displayData(data, allExclusions, payload); // Pass payload here!
                 loader.style.display = 'none';
                 results.style.display = 'block';
 
@@ -492,7 +513,7 @@
             }
         }
 
-        function displayData(data, excluded) {
+        function displayData(data, excluded, payload) {
             // Metrics
             document.getElementById('teMetric').innerText = (data.tracking_error * 100).toFixed(4) + "%";
 
