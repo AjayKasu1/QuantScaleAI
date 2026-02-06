@@ -153,7 +153,8 @@ class MarketDataEngine:
 
     def fetch_market_caps(self, tickers: List[str]) -> Dict[str, float]:
         """
-        Fetches market caps for a list of tickers, using a local cache to speed up subsequent runs.
+        Returns market caps from local static cache.
+        Does NOT fetch live to avoid timeouts/rate-limits on HF Spaces.
         """
         cache_file = os.path.join(settings.DATA_DIR, "market_cap_cache.json")
         caps = {}
@@ -165,40 +166,8 @@ class MarketDataEngine:
                     caps = json.load(f)
             except Exception as e:
                 logger.error(f"Failed to load cap cache: {e}")
-
-        # Identify missing tickers
-        missing = [t for t in tickers if t not in caps]
-        
-        if missing:
-            logger.info(f"Fetching market caps for {len(missing)} tickers (can take 60s)...")
-            import concurrent.futures
+        else:
+            logger.warning("Market Cap Cache file not found! 'Smallest/Largest' strategies may fail.")
             
-            def get_cap(ticker):
-                try:
-                    # Use yfinance fast_info for speed (no web scraping)
-                    # fast_info works well, fallback to info
-                    info = yf.Ticker(ticker).fast_info
-                    return ticker, info['market_cap']
-                except:
-                    # Retry logic or just 0
-                    try:
-                        return ticker, yf.Ticker(ticker).info.get('marketCap', 0)
-                    except:
-                        return ticker, 0
-
-            with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
-                results = executor.map(get_cap, missing)
-                
-            for ticker, cap in results:
-                if cap and cap > 0:
-                    caps[ticker] = cap
-                    
-            # Save Cache
-            try:
-                with open(cache_file, 'w') as f:
-                    json.dump(caps, f, indent=2)
-            except Exception as e:
-                logger.error(f"Failed to save cap cache: {e}")
-                
-        # Return only requested tickers
+        # Return requested
         return {t: caps.get(t, 0) for t in tickers}
