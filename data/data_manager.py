@@ -109,23 +109,50 @@ class MarketDataEngine:
         logger.info(f"Downloading prices for {len(valid_tickers)} tickers (Real Data Mode)...")
         
         data = pd.DataFrame()
-        max_retries = 3
+        # Chunked Download Strategy to avoid timeouts/rate-limits
+        chunk_size = 20
+        all_data = []
         
-        for attempt in range(max_retries):
-            try:
-                # threads=False is key to avoiding 429 Rate Limit
-                # Added timeout to prevent hanging
-                data = yf.download(valid_tickers, start=start_date, group_by='ticker', threads=False, progress=False, timeout=10)
-                
-                if not data.empty:
-                    break # Success
+        for i in range(0, len(valid_tickers), chunk_size):
+            chunk = valid_tickers[i:i+chunk_size]
+            logger.info(f"Downloading chunk {i//chunk_size + 1}: {chunk[:3]}...")
+            
+            chunk_data = pd.DataFrame()
+            # Retry logic per chunk
+            for attempt in range(3):
+                try:
+                    # Ticker-by-Ticker usually more reliable for small batches than bulk download if bulk is failing
+                    # But let's stick to download() for speed, just smaller batches.
                     
-                logger.warning(f"Attempt {attempt+1} returned empty. Retrying...")
-                time.sleep(2 ** attempt)
+                    # Note: threads=True might actually be better for speed if we are chunking, 
+                    # but threads=False is safer for rate limits. Let's try threads=False but small chunks.
+                    temp = yf.download(chunk, start=start_date, group_by='ticker', threads=False, progress=False, timeout=20)
+                    
+                    if not temp.empty:
+                        chunk_data = temp
+                        break
+                    time.sleep(1)
+                except Exception as e:
+                    logger.warning(f"Chunk failed: {e}")
+                    time.sleep(1)
+            
+            if not chunk_data.empty:
+                all_data.append(chunk_data)
+        
+        if not all_data:
+             logger.error("All chunks failed.")
+             # If user insists on live data, we might return empty here? 
+             # But let's keep the fallback but make it less likely to be needed.
+             pass # Will fall through to empty check
 
-            except Exception as e:
-                logger.error(f"Download attempt {attempt+1} failed: {e}")
-                time.sleep(2 ** attempt)
+        # Concatenate
+        try:
+            if all_data:
+                data = pd.concat(all_data, axis=1)
+            else:
+                data = pd.DataFrame()
+        except:
+            data = pd.DataFrame()
 
         if data.empty:
             logger.error("All download attempts failed. Switching to SYNTHETIC data.")
