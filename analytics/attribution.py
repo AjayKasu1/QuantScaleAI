@@ -120,6 +120,28 @@ class AttributionEngine:
         top_contributors = build_truth_table(sorted_contrib, 5)
         top_detractors = build_truth_table(sorted_contrib.sort_values(by='contribution', ascending=True), 5)
         
+        # Build Sector Exposure Truth Table
+        sector_exposure = []
+        for sector, data in sector_groups:
+            w_p = data['wp'].sum()
+            w_b = data['wb'].sum()
+            
+            if w_p == 0.0 and w_b > 0.0:
+                status = "Excluded"
+            elif w_p < w_b:
+                status = "Underweight"
+            elif w_p > w_b:
+                status = "Overweight"
+            else:
+                status = "Neutral"
+                
+            sector_exposure.append({
+                "Sector": sector,
+                "Portfolio_Weight": f"{w_p:.2%}",
+                "Benchmark_Weight": f"{w_b:.2%}",
+                "Status": status
+            })
+
         # Narrative skeleton (to be filled by AI)
         narrative_raw = (
             f"Total Active Return: {(total_allocation + total_selection + total_interaction):.4f}. "
@@ -133,5 +155,6 @@ class AttributionEngine:
             total_active_return=(total_allocation + total_selection + total_interaction),
             top_contributors=top_contributors,
             top_detractors=top_detractors,
+            sector_exposure=sector_exposure,
             narrative=narrative_raw
         )

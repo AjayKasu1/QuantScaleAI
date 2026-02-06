@@ -97,4 +97,5 @@ class AttributionReport(BaseModel):
     total_active_return: float
     top_contributors: List[Dict]
     top_detractors: List[Dict]
+    sector_exposure: Optional[List[Dict]] = Field(default_factory=list, description="Sector Level Attribution (Truth Table)")
     narrative: str

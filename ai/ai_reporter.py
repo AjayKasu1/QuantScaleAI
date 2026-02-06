@@ -50,6 +50,7 @@ INSTRUCTION: Start your commentary exactly with the header: "Market Commentary -
             selection_effect=attribution_report.selection_effect * 100,
             top_contributors=json.dumps(attribution_report.top_contributors, indent=2),
             top_detractors=json.dumps(attribution_report.top_detractors, indent=2),
+            sector_positioning=json.dumps(attribution_report.sector_exposure, indent=2), # Truth Table Injection
             current_date=current_date # Pass date to template
         )
         

@@ -37,6 +37,9 @@ Write a "Trailing 30-Day Risk & Performance Attribution" report relative to the 
 **Top Active Detractors (JSON)**:
 {top_detractors}
 
+**Sector Positioning (The "Truth Table")**:
+{sector_positioning}
+
 ## Guidelines for the Narrative:
 1. **Timeframe**: Use the EXACT date provided: "{current_date}".
 2. **Ticker Validation**: Use the Ticker symbols exactly as listed.
