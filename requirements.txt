@@ -1,5 +1,5 @@
 cvxpy>=1.4.1
-yfinance>=0.2.33
+yfinance>=0.2.50
 google-generativeai>=0.3.2
 pandas>=2.1.4
 numpy>=1.26.3
