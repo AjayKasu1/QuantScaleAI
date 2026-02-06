@@ -29,12 +29,34 @@ class QuantScaleSystem:
         
         # 1. Fetch Universe (S&P 500)
         tickers = self.data_engine.fetch_sp500_tickers()
-        # Limit for demo speed if needed, but let's try full
-        # tickers = tickers[:50] 
+
+        # OPTIMIZATION: Filter Universe BEFORE Fetching Data
+        # fetching 500 tickers takes too long on free tier spaces -> Timeout
+        valid_tickers_for_fetch = tickers
         
-        # 2. Get Market Data
+        if request.strategy and request.top_n:
+            logger.info(f"Applying Strategy PRE-FETCH: {request.strategy} with Top N={request.top_n}")
+            caps = self.data_engine.fetch_market_caps(tickers)
+            
+            # Sort valid_tickers by cap
+            valid_caps = {t: c for t, c in caps.items() if c > 0}
+            sorted_tickers = sorted(valid_caps.keys(), key=lambda t: valid_caps[t])
+            
+            if request.strategy == "smallest_market_cap":
+                valid_tickers_for_fetch = sorted_tickers[:request.top_n]
+                logger.info(f"Filtered to Smallest {request.top_n} for Fetching: {valid_tickers_for_fetch[:5]}...")
+                
+            elif request.strategy == "largest_market_cap":
+                valid_tickers_for_fetch = sorted_tickers[-request.top_n:]
+                logger.info(f"Filtered to Largest {request.top_n} for Fetching: {valid_tickers_for_fetch[:5]}...")
+        else:
+             # Default safety limit for Demo if no strategy
+             valid_tickers_for_fetch = tickers[:60]
+             logger.warning("No strategy specified. Defaulting to first 60 tickers for Demo Speed.")
+        
+        # 2. Get Market Data (Only for filtered subset)
         # Fetch last 2 years for covariance
-        data = self.data_engine.fetch_market_data(tickers, start_date="2023-01-01")
+        data = self.data_engine.fetch_market_data(valid_tickers_for_fetch, start_date="2023-01-01")
         if data.empty:
             logger.error("No market data available. Aborting.")
             return None
@@ -45,27 +67,11 @@ class QuantScaleSystem:
         # Ensure we align returns and tickers
         valid_tickers = returns.columns.tolist()
         
-        # APPLY FILTERING STRATEGY (New)
+        # Re-verify filter (data fetch might have dropped some)
         if request.strategy and request.top_n:
-            logger.info(f"Applying Strategy: {request.strategy} with Top N={request.top_n}")
-            caps = self.data_engine.fetch_market_caps(valid_tickers)
-            
-            # Sort valid_tickers by cap
-            # Filter out 0 caps (failed fetches)
-            valid_caps = {t: c for t, c in caps.items() if c > 0}
-            sorted_tickers = sorted(valid_caps.keys(), key=lambda t: valid_caps[t])
-            
-            if request.strategy == "smallest_market_cap":
-                valid_tickers = sorted_tickers[:request.top_n]
-                logger.info(f"Filtered to Smallest {request.top_n}: {valid_tickers[:5]}...")
-                
-            elif request.strategy == "largest_market_cap":
-                valid_tickers = sorted_tickers[-request.top_n:]
-                logger.info(f"Filtered to Largest {request.top_n}: {valid_tickers[:5]}...")
-                
-            # Re-fetch returns for just these? No, we already have `returns` DF.
-            # Just slice the DF to save computation in Risk Model
-            returns = returns[valid_tickers]
+            # Re-sort based on what we actually have?
+            # Or just proceed, since we pre-filtered.
+            pass
             
         cov_matrix = self.risk_model.compute_covariance_matrix(returns)
         
