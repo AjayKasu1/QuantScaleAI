@@ -182,7 +182,7 @@ class MarketDataEngine:
                             try:
                                 df_close = data['Close']
                             except:
-                            try:
+                                try:
                                     df_close = data.xs('Close', level=1, axis=1)
                                 except:
                                     pass
