@@ -96,34 +96,69 @@ class MarketDataEngine:
 
     def fetch_market_data(self, tickers: List[str], start_date: str = "2023-01-01") -> pd.DataFrame:
         """
-        Fetches adjusted close prices for a list of tickers.
+        Fetches adjusted close prices for a list of tickers using REAL data logic.
+        Uses sequential fetching (threads=False) and retries to handle rate limits.
         """
-        if not tickers:
-            logger.warning("No tickers provided to fetch.")
-            return pd.DataFrame()
-
-        logger.info(f"Downloading data for {len(tickers)} tickers from {start_date}...")
-        # Use yfinance download with threads
-        # 'Close' is usually adjusted in newer versions or defaults
-        data = yf.download(tickers, start=start_date, progress=False)
+        import time
         
-        if data.empty:
-            logger.error("No data fetched from yfinance.")
+        # Clean tickers
+        valid_tickers = [t.strip().upper() for t in tickers if t]
+        if not valid_tickers:
             return pd.DataFrame()
             
-        # Handle MultiIndex (Price, Ticker)
-        if hasattr(data.columns, 'levels') and 'Close' in data.columns.levels[0]:
-            data = data['Close']
-        elif 'Close' in data.columns:
-             data = data['Close']
-        elif 'Adj Close' in data.columns:
-            data = data['Adj Close']
-        else:
-            # Fallback
-            logger.warning("Could not find Close/Adj Close. Using first level.")
-            data = data.iloc[:, :len(tickers)] # Risky but fallback
+        logger.info(f"Downloading prices for {len(valid_tickers)} tickers (Real Data Mode)...")
+        
+        data = pd.DataFrame()
+        max_retries = 3
+        
+        for attempt in range(max_retries):
+            try:
+                # threads=False is key to avoiding 429 Rate Limit
+                data = yf.download(valid_tickers, start=start_date, group_by='ticker', threads=False, progress=False)
+                
+                if not data.empty:
+                    break # Success
+                    
+                logger.warning(f"Attempt {attempt+1} returned empty. Retrying...")
+                time.sleep(2 ** attempt) # Backoff: 1s, 2s, 4s
+                
+            except Exception as e:
+                logger.error(f"Download attempt {attempt+1} failed: {e}")
+                time.sleep(2 ** attempt)
 
-        return self._clean_data(data)
+        if data.empty:
+            logger.error("All download attempts failed. Returning empty DataFrame.")
+            return pd.DataFrame()
+
+        try:
+            # Handle MultiIndex
+            df_close = pd.DataFrame()
+            
+            if len(valid_tickers) == 1:
+                t = valid_tickers[0]
+                if 'Adj Close' in data.columns:
+                    df_close[t] = data['Adj Close']
+                elif 'Close' in data.columns:
+                     df_close[t] = data['Close']
+            else:
+                try:
+                    df_close = data['Adj Close']
+                except KeyError:
+                    try:
+                        df_close = data.xs('Adj Close', level=0, axis=1)
+                    except:
+                        try:
+                            df_close = data['Close']
+                        except:
+                             return pd.DataFrame()
+
+            # Drop columns with all NaNs
+            df_close.dropna(axis=1, how='all', inplace=True)
+            return df_close
+            
+        except Exception as e:
+            logger.error(f"Error processing market data: {e}")
+            return pd.DataFrame()
 
     def _clean_data(self, df: pd.DataFrame) -> pd.DataFrame:
         """
