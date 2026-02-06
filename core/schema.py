@@ -27,6 +27,8 @@ class OptimizationRequest(BaseModel):
     excluded_sectors: List[str] = Field(default_factory=list, description="List of sectors to exclude (e.g., ['Energy'])")
     excluded_tickers: List[str] = Field(default_factory=list, description="List of specific tickers to exclude (e.g., ['AMZN'])")
     max_weight: Optional[float] = Field(None, description="Maximum weight for any single asset (e.g., 0.05)")
+    strategy: Optional[str] = Field(None, description="Global Filter Strategy: 'smallest_market_cap' or 'largest_market_cap'")
+    top_n: Optional[int] = Field(None, description="Number of assets to select for strategy (e.g. 50)")
     benchmark: str = "^GSPC"
 
     class Config:

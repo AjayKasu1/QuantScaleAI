@@ -44,6 +44,29 @@ class QuantScaleSystem:
         # 3. Compute Risk Model
         # Ensure we align returns and tickers
         valid_tickers = returns.columns.tolist()
+        
+        # APPLY FILTERING STRATEGY (New)
+        if request.strategy and request.top_n:
+            logger.info(f"Applying Strategy: {request.strategy} with Top N={request.top_n}")
+            caps = self.data_engine.fetch_market_caps(valid_tickers)
+            
+            # Sort valid_tickers by cap
+            # Filter out 0 caps (failed fetches)
+            valid_caps = {t: c for t, c in caps.items() if c > 0}
+            sorted_tickers = sorted(valid_caps.keys(), key=lambda t: valid_caps[t])
+            
+            if request.strategy == "smallest_market_cap":
+                valid_tickers = sorted_tickers[:request.top_n]
+                logger.info(f"Filtered to Smallest {request.top_n}: {valid_tickers[:5]}...")
+                
+            elif request.strategy == "largest_market_cap":
+                valid_tickers = sorted_tickers[-request.top_n:]
+                logger.info(f"Filtered to Largest {request.top_n}: {valid_tickers[:5]}...")
+                
+            # Re-fetch returns for just these? No, we already have `returns` DF.
+            # Just slice the DF to save computation in Risk Model
+            returns = returns[valid_tickers]
+            
         cov_matrix = self.risk_model.compute_covariance_matrix(returns)
         
         # 4. Get Benchmark Data (S&P 500)

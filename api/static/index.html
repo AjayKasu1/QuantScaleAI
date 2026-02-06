@@ -466,6 +466,8 @@
                 "excluded_sectors": excluded,
                 "excluded_tickers": excludedTickers,
                 "max_weight": maxWeight,
+                "strategy": strategy,
+                "top_n": topN,
                 "initial_investment": 100000
             };
 
@@ -493,15 +495,18 @@
         function displayData(data, excluded) {
             // Metrics
             document.getElementById('teMetric').innerText = (data.tracking_error * 100).toFixed(4) + "%";
-            
+
             let constraintText = excluded.length > 0 ? "Excl: " + excluded.join(", ") : "None";
             if (data.max_weight_applied) {
                 constraintText += ` | Max Wgt: ${(data.max_weight_applied * 100).toFixed(1)}%`;
             } else if (payload.max_weight) {
-                // Determine if backend ignored it or if we just want to show what we sent
-                constraintText += ` | Max Wgt: ${(payload.max_weight * 100).toFixed(1)}% (Requested)`;
+                constraintText += ` | Max Wgt: ${(payload.max_weight * 100).toFixed(1)}% (Req)`;
             }
-            
+
+            if (payload.strategy) {
+                constraintText += ` | Strat: ${payload.strategy.replace('_market_cap', '')} ${payload.top_n}`;
+            }
+
             document.getElementById('excludedMetric').innerText = constraintText;
 
             // AI Text - Markdown clean
