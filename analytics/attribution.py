@@ -107,12 +107,37 @@ class AttributionEngine:
         def build_truth_table(dataframe, n=5):
             results = []
             for ticker, row in dataframe.head(n).iterrows():
+                status = get_status(row)
+                ret_val = row['ret']
+                active_contrib = row['contribution']
+                
+                # Directional Signage Logic (The "Why")
+                reasoning = "Neutral"
+                
+                if status == "Excluded":
+                    if ret_val < 0:
+                        reasoning = "Protected (Avoided Loss)"
+                    else:
+                        reasoning = "Drag (Missed Rally)"
+                elif status == "Underweight":
+                    if ret_val < 0:
+                        reasoning = "Protected (Underweight Loser)"
+                    else:
+                         reasoning = "Drag (Underweight Winner)"
+                elif status == "Overweight":
+                    if ret_val > 0:
+                        reasoning = "Value Add (Stock Picking)"
+                    else:
+                        reasoning = "Detractor (Overweight Loser)"
+                        
                 results.append({
                     "Ticker": ticker,
                     "Sector": row['sector'],
-                    "Status": get_status(row),
+                    "Status": status,
+                    "active_contribution_raw": float(row['contribution']), # Keep raw for sorting helper if needed
                     "Active_Contribution": f"{row['contribution']:.4f}",
-                    "Return": f"{row['ret']:.2%}"
+                    "Return": f"{row['ret']:.2%}",
+                    "Reasoning": reasoning
                 })
             return results
 

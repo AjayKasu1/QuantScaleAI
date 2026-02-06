@@ -49,8 +49,13 @@ Write a "Trailing 30-Day Risk & Performance Attribution" report relative to the 
    - DO NOT say "We held [Excluded Stock]".
 4. **Chain of Thought (Mental Check)**:
    - First, scan the JSON. Identify the "Status" of the top movers.
-   - Second, match the Sector to the Stock.
+   - Second, READ THE "Reasoning" FIELD. This is the ground truth.
    - Third, write the commentary based ONLY on these facts.
+
+5. **Signage Rules (CRITICAL)**:
+   - If Return is NEGATIVE (e.g. -15%), NEVER use the word "rallied". Use "declined", "sold off", or "dropped".
+   - If Reasoning says "Protected (Avoided Loss)", say: "The portfolio benefited from avoiding [Stock], which declined by [Return]." 
+   - If Reasoning says "Drag (Missed Rally)", say: "Performaance was held back by not owning [Stock], which rose by [Return]."
 
 Write a professional, concise 3-paragraph commentary.
 """
