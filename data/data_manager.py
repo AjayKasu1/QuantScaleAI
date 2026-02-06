@@ -155,18 +155,23 @@ class MarketDataEngine:
                             try:
                                 df_close = data['Close']
                             except:
-                                try:
+                            try:
                                     df_close = data.xs('Close', level=1, axis=1)
                                 except:
-                                    return pd.DataFrame()
+                                    pass
 
             # Drop columns with all NaNs
             df_close.dropna(axis=1, how='all', inplace=True)
+            
+            if df_close.empty:
+                logger.warning("Extraction resulted in empty DataFrame. Switching to SYNTHETIC data.")
+                return self._generate_synthetic_data(valid_tickers, start_date)
+                
             return df_close
             
         except Exception as e:
-            logger.error(f"Error processing market data: {e}")
-            return pd.DataFrame()
+            logger.error(f"Error processing market data: {e}. Switching to SYNTHETIC data.")
+            return self._generate_synthetic_data(valid_tickers, start_date)
 
     def _clean_data(self, df: pd.DataFrame) -> pd.DataFrame:
         """
