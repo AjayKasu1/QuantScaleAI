@@ -422,18 +422,39 @@
             const lowerInput = input.toLowerCase();
 
             // Check Sectors
+            const includeKeywords = ["keep", "include", "with", "stay", "portfolio", "only"];
             for (const [sector, keywords] of Object.entries(sectorKeywords)) {
                 if (keywords.some(k => lowerInput.includes(k))) {
-                    // Avoid double counting if user said "Amazon" (Consumer) but didn't mean the whole sector?
-                    // For now, standard inclusion
-                    excluded.push(sector);
+                    // SENTIMENT GUARD: Check if the user specifically asked to KEEP this sector
+                    const isKept = includeKeywords.some(inc => 
+                        lowerInput.includes(`${inc} the ${sector.toLowerCase()}`) || 
+                        lowerInput.includes(`${inc} ${sector.toLowerCase()}`) ||
+                        // Check for common short nicknames like "tech"
+                        keywords.some(key => lowerInput.includes(`${inc} the ${key}`)) ||
+                        keywords.some(key => lowerInput.includes(`${inc} ${key}`))
+                    );
+                    
+                    if (!isKept) {
+                        excluded.push(sector);
+                    } else {
+                        console.log(`Sentiment Guard: Preserving ${sector} based on include intent.`);
+                    }
                 }
             }
 
             // Check Tickers
             for (const [ticker, keywords] of Object.entries(stockKeywords)) {
                 if (keywords.some(k => lowerInput.includes(k))) {
-                    excludedTickers.push(ticker);
+                    const isKept = includeKeywords.some(inc => 
+                        lowerInput.includes(`${inc} the ${ticker.toLowerCase()}`) || 
+                        lowerInput.includes(`${inc} ${ticker.toLowerCase()}`) ||
+                        keywords.some(key => lowerInput.includes(`${inc} the ${key}`)) ||
+                        keywords.some(key => lowerInput.includes(`${inc} ${key}`))
+                    );
+                    
+                    if (!isKept) {
+                        excludedTickers.push(ticker);
+                    }
                 }
             }
 
