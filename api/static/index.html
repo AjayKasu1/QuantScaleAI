@@ -426,13 +426,9 @@
             for (const [sector, keywords] of Object.entries(sectorKeywords)) {
                 if (keywords.some(k => lowerInput.includes(k))) {
                     // SENTIMENT GUARD: Check if the user specifically asked to KEEP this sector
-                    const isKept = includeKeywords.some(inc => 
-                        lowerInput.includes(`${inc} the ${sector.toLowerCase()}`) || 
-                        lowerInput.includes(`${inc} ${sector.toLowerCase()}`) ||
-                        // Check for common short nicknames like "tech"
-                        keywords.some(key => lowerInput.includes(`${inc} the ${key}`)) ||
-                        keywords.some(key => lowerInput.includes(`${inc} ${key}`))
-                    );
+                    // Refined Regex to handle newlines (\s+) and "the"
+                    const incPattern = new RegExp(`(${includeKeywords.join('|')})\\s+(the\\s+)?(${[sector, ...keywords].join('|')})`, 'i');
+                    const isKept = incPattern.test(lowerInput);
                     
                     if (!isKept) {
                         excluded.push(sector);
@@ -445,12 +441,8 @@
             // Check Tickers
             for (const [ticker, keywords] of Object.entries(stockKeywords)) {
                 if (keywords.some(k => lowerInput.includes(k))) {
-                    const isKept = includeKeywords.some(inc => 
-                        lowerInput.includes(`${inc} the ${ticker.toLowerCase()}`) || 
-                        lowerInput.includes(`${inc} ${ticker.toLowerCase()}`) ||
-                        keywords.some(key => lowerInput.includes(`${inc} the ${key}`)) ||
-                        keywords.some(key => lowerInput.includes(`${inc} ${key}`))
-                    );
+                    const incPattern = new RegExp(`(${includeKeywords.join('|')})\\s+(the\\s+)?(${[ticker, ...keywords].join('|')})`, 'i');
+                    const isKept = incPattern.test(lowerInput);
                     
                     if (!isKept) {
                         excludedTickers.push(ticker);

@@ -48,12 +48,21 @@ def test_attribution_logic():
     
     msft = next((x for x in report.top_detractors if x['Ticker'] == 'MSFT'), None)
     if msft:
-        if msft['Status'] == "Excluded" and float(msft['Active_Contribution']) < 0:
-            print("\nSUCCESS: MSFT correctly identified as Excluded Detractor.")
+        # Signage Logic Verification
+        # MSFT is Excluded and Return is +10%. This is BAD. Should be 'Drag' or 'Missed Rally'
+        print(f"MSFT Reasoning: {msft.get('Reasoning', 'N/A')}")
+        
+        if "Drag" in msft.get('Reasoning', '') or "Missed" in msft.get('Reasoning', ''):
+             print("SUCCESS: MSFT correctly identified as Missed Rally (Drag).")
         else:
-            print(f"\nFAILURE: MSFT status/logic wrong: {msft}")
+             print(f"FAILURE: MSFT reasoning wrong: {msft}")
+             
+        if msft['Status'] == "Excluded" and float(msft['Active_Contribution']) < 0:
+            print("SUCCESS: MSFT correctly identified as Excluded Detractor.")
+        else:
+            print(f"FAILURE: MSFT status/logic wrong: {msft}")
     else:
-        print("\nFAILURE: MSFT not found in detractors.")
+        print("FAILURE: MSFT not found in detractors.")
 
     # AAPL Active Weight = 0.05 - 0.04 = +0.01
     # AAPL Active Contrib = +0.01 * 0.10 = +0.001 (Contributor)
@@ -63,6 +72,19 @@ def test_attribution_logic():
          print("SUCCESS: AAPL correctly identified as Overweight Contributor.")
     else:
          print(f"FAILURE: AAPL logic wrong. {aapl}")
+
+    # VERIFICATION: Sector Exposure Truth Table
+    print("\n[Sector Exposure Truth Table]")
+    tech_exposure = next((x for x in report.sector_exposure if x['Sector'] == 'Technology'), None)
+    if tech_exposure:
+        print(f"Technology Exposure: {tech_exposure}")
+        # We hold AAPL (5%) vs Bench AAPL+MSFT (10%) -> Underweight
+        if tech_exposure['Status'] == "Underweight":
+            print("SUCCESS: Technology correctly identified as UNDERWEIGHT (not Excluded).")
+        else:
+             print(f"FAILURE: Technology status wrong: {tech_exposure['Status']}")
+    else:
+        print("FAILURE: Technology sector missing from report.")
 
 if __name__ == "__main__":
     test_attribution_logic()
