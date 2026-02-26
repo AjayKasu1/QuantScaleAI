@@ -593,7 +593,16 @@
                 options: {
                     responsive: true,
                     plugins: {
-                        legend: { position: 'right', labels: { color: '#94a3b8' } }
+                        legend: { position: 'right', labels: { color: '#94a3b8' } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = (context.parsed * 100).toFixed(2);
+                                    return `${label}: ${value}%`;
+                                }
+                            }
+                        }
                     }
                 }
             });
