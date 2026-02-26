@@ -45,7 +45,8 @@ Write a "Trailing 30-Day Risk & Performance Attribution" report relative to the 
 2. **Ticker Validation**: Use the Ticker symbols exactly as listed.
 3. **Attribution Logic**: 
    - If a sector is excluded (Allocation Effect), describe it as a strategic decision.
-   - For Detractors that are "Excluded" (e.g. Status: Excluded), say: "The portfolio faced a headwind due to the exclusion of [Sector/Stock], which rallied during the period." 
+   - For Detractors that are "Excluded" (Status: Excluded) and had a POSITIVE Return: say "Performance was held back by not owning [Stock], which rallied [Return]."
+   - For Contributors that are "Excluded" (Status: Excluded) and had a NEGATIVE Return: say "The portfolio protected capital by avoiding [Stock], which declined [Return]."
    - DO NOT say "We held [Excluded Stock]".
 4. **Chain of Thought (Mental Check)**:
    - First, scan the JSON. Identify the "Status" of the top movers.
