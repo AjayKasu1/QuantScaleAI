@@ -30,6 +30,7 @@ class OptimizationRequest(BaseModel):
     strategy: Optional[str] = Field(None, description="Global Filter Strategy: 'smallest_market_cap' or 'largest_market_cap'")
     top_n: Optional[int] = Field(None, description="Number of assets to select for strategy (e.g. 50)")
     benchmark: str = "^GSPC"
+    user_prompt: Optional[str] = Field(None, description="Raw user input for LLM intent parsing")
 
     class Config:
         json_schema_extra = {

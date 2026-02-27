@@ -27,6 +27,12 @@ class QuantScaleSystem:
     def run_pipeline(self, request: OptimizationRequest):
         logger.info(f"Starting pipeline for Client {request.client_id}...")
         
+        # 0. LLM Intent Parsing (New)
+        if request.user_prompt and not request.excluded_sectors:
+            logger.info(f"Parsing user intent: '{request.user_prompt}'")
+            request.excluded_sectors = self.ai_reporter.parse_intent(request.user_prompt)
+            logger.info(f"LLM Mapped Exclusions: {request.excluded_sectors}")
+
         # 1. Fetch Universe (S&P 500)
         tickers = self.data_engine.fetch_sp500_tickers()
 

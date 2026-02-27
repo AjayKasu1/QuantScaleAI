@@ -77,3 +77,36 @@ INSTRUCTION: Start your commentary exactly with the header: "Market Commentary -
         except Exception as e:
             logger.error(f"Failed to generate AI report: {e}")
             return "Error generating commentary. Please check API connection."
+    def parse_intent(self, user_prompt: str) -> list:
+        """
+        Uses LLM to map user prompt to a list of exact GICS sectors to exclude.
+        """
+        if not self.client:
+            logger.warning("LLM Client unavailable for Intent Parsing. Falling back to empty list.")
+            return []
+
+        from ai.prompts import INTENT_PARSER_SYSTEM_PROMPT
+        
+        try:
+            response = self.client.chat_completion(
+                model=self.model_id,
+                messages=[
+                    {"role": "system", "content": INTENT_PARSER_SYSTEM_PROMPT},
+                    {"role": "user", "content": f"Parse this prompt for sector exclusions: '{user_prompt}'"}
+                ],
+                max_tokens=100,
+                temperature=0.0 # Strict output
+            )
+            
+            content = response.choices[0].message.content.strip()
+            # Find the JSON list in the response
+            import re
+            match = re.search(r'\[.*\]', content, re.DOTALL)
+            if match:
+                import json
+                return json.loads(match.group(0))
+            return []
+            
+        except Exception as e:
+            logger.error(f"Intent Parsing failed: {e}")
+            return []

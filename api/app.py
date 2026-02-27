@@ -26,12 +26,23 @@ def root():
 def health_check():
     return {"status": "healthy", "service": "QuantScale AI Direct Indexing"}
 
+def parse_constraints_with_llm(user_prompt: str) -> list:
+    """
+    Dedicated parser function in the API layer.
+    Maps natural language to exact GICS sectors.
+    """
+    return system.ai_reporter.parse_intent(user_prompt)
+
 @app.post("/optimize", response_model=dict)
 def optimize_portfolio(request: OptimizationRequest):
     """
     Optimizes a portfolio based on exclusions and generates an AI Attribution report.
     """
     try:
+        # If the request contains a raw prompt but no sectors, parse it here
+        if request.user_prompt and not request.excluded_sectors:
+             request.excluded_sectors = parse_constraints_with_llm(request.user_prompt)
+             
         result = system.run_pipeline(request)
         if not result:
             raise HTTPException(status_code=500, detail="Pipeline failed to execute.")

@@ -61,21 +61,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- Constants ---
-SECTOR_KEYWORDS = {
-    "Energy": ["energy", "oil", "gas"],
-    "Technology": ["technology", "tech", "software", "it"],
-    "Financials": ["financials", "finance", "banks"],
-    "Healthcare": ["healthcare", "health", "pharma"],
-    "Utilities": ["utilities", "utility"],
-    "Materials": ["materials", "mining"],
-    "Consumer Discretionary": ["consumer", "retail", "discretionary"],
-    "Real Estate": ["real estate", "reit"],
-    "Communication Services": ["communication", "media", "telecom"]
-}
-INCLUDE_KEYWORDS = ["keep", "include", "with", "stay", "portfolio", "only"]
-
-
 # --- Parsers ---
 def parse_investment_amount(text: str) -> float:
     text = text.replace(",", "")
@@ -87,20 +72,6 @@ def parse_investment_amount(text: str) -> float:
         elif suffix == 'm': amount *= 1_000_000
         return amount
     return 100_000.0
-
-
-def parse_excluded_sectors(text: str) -> list:
-    lower = text.lower()
-    excluded = []
-    for sector, keywords in SECTOR_KEYWORDS.items():
-        if any(k in lower for k in keywords):
-            inc_pattern = re.compile(
-                rf'({"|".join(INCLUDE_KEYWORDS)})\s+(the\s+)?({"|".join([sector.lower()] + keywords)})',
-                re.IGNORECASE
-            )
-            if not inc_pattern.search(lower):
-                excluded.append(sector)
-    return excluded
 
 
 def parse_strategy(text: str):
@@ -148,17 +119,17 @@ run_btn = st.button("🚀 Generate Portfolio Strategy", use_container_width=True
 
 if run_btn and user_input:
     investment_amount = parse_investment_amount(user_input)
-    excluded_sectors = parse_excluded_sectors(user_input)
     strategy, top_n = parse_strategy(user_input)
 
     request = OptimizationRequest(
         client_id="StreamlitUser",
         initial_investment=investment_amount,
-        excluded_sectors=excluded_sectors,
+        excluded_sectors=[], # Let the LLM derive this
         excluded_tickers=[],
         strategy=strategy,
         top_n=top_n,
-        benchmark="^GSPC"
+        benchmark="^GSPC",
+        user_prompt=user_input
     )
 
     with st.spinner("⚙️ Running Convex Optimization & AI Analysis..."):
