@@ -215,19 +215,28 @@ if run_btn and user_input:
             
         all_sectors = sorted(list(set(list(port_sector_weights.keys()) + list(bench_sector_weights.keys()))))
         
-        # 3. Sector Allocation Pie Chart (New)
-        labels = list(port_sector_weights.keys())
-        values = list(port_sector_weights.values())
+        # 3. Portfolio Composition Pie Chart (Holding Level)
+        # Using top 15 holdings for better readability in the pie
+        sorted_weights = sorted(opt.weights.items(), key=lambda x: x[1], reverse=True)
+        top_holdings = sorted_weights[:15]
+        other_weight = sum(w for t, w in sorted_weights[15:])
+        
+        labels = [t for t, w in top_holdings]
+        values = [w for t, w in top_holdings]
+        if other_weight > 0:
+            labels.append("Others")
+            values.append(other_weight)
         
         fig_pie = go.Figure(data=[go.Pie(
             labels=labels, 
             values=values, 
             hole=.4,
-            marker=dict(colors=px.colors.qualitative.Pastel)
+            textinfo='label',
+            marker=dict(colors=px.colors.qualitative.Prism)
         )])
         
         fig_pie.update_layout(
-            title="Portfolio Composition",
+            title="Top Holdings Allocation",
             template="plotly_dark",
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
@@ -236,14 +245,14 @@ if run_btn and user_input:
         )
         st.plotly_chart(fig_pie, use_container_width=True)
 
-        # Bar chart below pie for detailed comparison
+        # Bar chart for sector comparison
         fig_sector = go.Figure(data=[
             go.Bar(name='Bench', x=all_sectors, y=[bench_sector_weights.get(s, 0)*100 for s in all_sectors], marker_color="#94a3b8"),
             go.Bar(name='Port', x=all_sectors, y=[port_sector_weights.get(s, 0)*100 for s in all_sectors], marker_color="#34d399")
         ])
         
         fig_sector.update_layout(
-            title="Sector Match (%)",
+            title="Sector Exposure Match (%)",
             template="plotly_dark",
             barmode='group',
             height=250,
