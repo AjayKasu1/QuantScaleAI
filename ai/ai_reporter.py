@@ -52,8 +52,12 @@ class AIReporter:
             
             result = response.json()
             # Handle different common response formats
-            if isinstance(result, dict) and "choices" in result:
-                return result["choices"][0]["message"]["content"]
+            if isinstance(result, dict):
+                if "choices" in result: # Standard OpenAI format
+                    return result["choices"][0]["message"]["content"]
+                if "output" in result and isinstance(result["output"], dict) and "content" in result["output"]: # Bytez format
+                    return result["output"]["content"]
+                return str(result)
             elif isinstance(result, str):
                 return result
             else:
