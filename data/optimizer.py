@@ -74,10 +74,17 @@ class PortfolioOptimizer:
             logger.info(f"Applying Sector Exclusion Validation for: {excluded_sectors}")
             for i, ticker in enumerate(tickers):
                 sector = sector_map.get(ticker, "Unknown")
+                # Normalize both for robust matching (e.g., "Health Care" vs "Healthcare")
+                sector_norm = sector.lower().replace(" ", "").replace("-", "")
+                
                 for excl in excluded_sectors:
-                     if excl.lower() == sector.lower() or (excl == "Technology" and sector == "Information Technology"):
+                    excl_norm = excl.lower().replace(" ", "").replace("-", "")
+                    
+                    # Match if normalized strings are equal OR special mapping for Tech
+                    if excl_norm == sector_norm or (excl_norm == "tech" and sector_norm == "informationtechnology"):
                         excluded_indices.append(i)
                         mask_vector[i] = 1
+                        break
 
         # Ticker Exclusions (NEW)
         if excluded_tickers:
