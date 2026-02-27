@@ -200,7 +200,7 @@ if run_btn and user_input:
         st.plotly_chart(fig_perf, use_container_width=True)
 
     with eda_col2:
-        # 2. Sector Weight Comparison
+        # 2. Sector Weight Comparison (Bar)
         # Aggregating sector weights
         port_sector_weights = {}
         bench_sector_weights = {}
@@ -215,18 +215,41 @@ if run_btn and user_input:
             
         all_sectors = sorted(list(set(list(port_sector_weights.keys()) + list(bench_sector_weights.keys()))))
         
+        # 3. Sector Allocation Pie Chart (New)
+        labels = list(port_sector_weights.keys())
+        values = list(port_sector_weights.values())
+        
+        fig_pie = go.Figure(data=[go.Pie(
+            labels=labels, 
+            values=values, 
+            hole=.4,
+            marker=dict(colors=px.colors.qualitative.Pastel)
+        )])
+        
+        fig_pie.update_layout(
+            title="Portfolio Composition",
+            template="plotly_dark",
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=10, r=10, t=40, b=10),
+            showlegend=False
+        )
+        st.plotly_chart(fig_pie, use_container_width=True)
+
+        # Bar chart below pie for detailed comparison
         fig_sector = go.Figure(data=[
-            go.Bar(name='Benchmark', x=all_sectors, y=[bench_sector_weights.get(s, 0)*100 for s in all_sectors], marker_color="#94a3b8"),
-            go.Bar(name='Portfolio', x=all_sectors, y=[port_sector_weights.get(s, 0)*100 for s in all_sectors], marker_color="#34d399")
+            go.Bar(name='Bench', x=all_sectors, y=[bench_sector_weights.get(s, 0)*100 for s in all_sectors], marker_color="#94a3b8"),
+            go.Bar(name='Port', x=all_sectors, y=[port_sector_weights.get(s, 0)*100 for s in all_sectors], marker_color="#34d399")
         ])
         
         fig_sector.update_layout(
-            title="Sector Allocation (%)",
+            title="Sector Match (%)",
             template="plotly_dark",
             barmode='group',
+            height=250,
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
-            margin=dict(l=20, r=20, t=40, b=20),
+            margin=dict(l=10, r=10, t=30, b=10),
             showlegend=False
         )
         st.plotly_chart(fig_sector, use_container_width=True)
