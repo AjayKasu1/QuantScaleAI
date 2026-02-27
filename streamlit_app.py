@@ -158,8 +158,8 @@ if run_btn and user_input:
             help="How closely the portfolio tracks the S&P 500"
         )
     with col3:
-        excl_display = ", ".join(excluded_sectors) if excluded_sectors else "None"
-        st.metric("🚫 Excluded", excl_display if len(excl_display) <= 30 else f"{len(excluded_sectors)} Sectors")
+        excl_display = ", ".join(request.excluded_sectors) if request.excluded_sectors else "None"
+        st.metric("🚫 Excluded", excl_display if len(excl_display) <= 30 else f"{len(request.excluded_sectors)} Sectors")
 
     st.divider()
 
