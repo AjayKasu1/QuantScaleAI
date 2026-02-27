@@ -10,6 +10,7 @@ class Settings(BaseModel):
     
     # API Keys
     HF_TOKEN: Optional[SecretStr] = Field(default_factory=lambda: SecretStr(os.getenv("HF_TOKEN", "")) if os.getenv("HF_TOKEN") else None, description="Hugging Face API Token")
+    BYTEZ_API_KEY: Optional[SecretStr] = Field(default_factory=lambda: SecretStr(os.getenv("BYTEZ_API_KEY", "")) if os.getenv("BYTEZ_API_KEY") else None, description="Bytez API Key")
     
     # Data Configuration
     DATA_DIR: str = Field(default="./data", description="Directory to store static data files")
