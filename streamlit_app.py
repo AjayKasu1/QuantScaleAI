@@ -105,6 +105,9 @@ def get_system():
     return QuantScaleSystem()
 
 
+import plotly.graph_objects as go
+import plotly.express as px
+
 # --- UI ---
 st.markdown('<div class="main-header">QuantScale AI</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Direct Indexing & Attribution Engine</div>', unsafe_allow_html=True)
@@ -146,6 +149,9 @@ if run_btn and user_input:
 
     opt = result["optimization"]
     commentary = result["commentary"]
+    market_data = result["market_data"]
+    benchmark_weights = result["benchmark_weights"]
+    sector_map = result["sector_map"]
 
     # --- Metrics ---
     col1, col2, col3 = st.columns(3)
@@ -160,6 +166,70 @@ if run_btn and user_input:
     with col3:
         excl_display = ", ".join(request.excluded_sectors) if request.excluded_sectors else "None"
         st.metric("🚫 Excluded", excl_display if len(excl_display) <= 30 else f"{len(request.excluded_sectors)} Sectors")
+
+    st.divider()
+
+    # --- Advanced EDA Section ---
+    st.markdown('<p class="section-title">Market Context & Portfolio EDA</p>', unsafe_allow_html=True)
+    
+    eda_col1, eda_col2 = st.columns([2, 1])
+    
+    with eda_col1:
+        # 1. Performance Comparison (Trailing 30 Days)
+        last_30_returns = market_data.iloc[-21:]
+        
+        # Portfolio vs Benchmark Cumulative Returns
+        bench_daily = (last_30_returns * benchmark_weights).sum(axis=1)
+        port_daily = (last_30_returns * pd.Series(opt.weights)).sum(axis=1)
+        
+        cum_bench = (1 + bench_daily).cumprod() * 100
+        cum_port = (1 + port_daily).cumprod() * 100
+        
+        fig_perf = go.Figure()
+        fig_perf.add_trace(go.Scatter(x=cum_bench.index, y=cum_bench, name="Benchmark (S&P 500 Proxy)", line=dict(color="#94a3b8", width=2, dash='dot')))
+        fig_perf.add_trace(go.Scatter(x=cum_port.index, y=cum_port, name="Optimized Portfolio", line=dict(color="#60a5fa", width=3)))
+        
+        fig_perf.update_layout(
+            title="Growth of $100 (Trailing 30 Days)",
+            template="plotly_dark",
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=20, r=20, t=40, b=20),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        )
+        st.plotly_chart(fig_perf, use_container_width=True)
+
+    with eda_col2:
+        # 2. Sector Weight Comparison
+        # Aggregating sector weights
+        port_sector_weights = {}
+        bench_sector_weights = {}
+        
+        for ticker, weight in opt.weights.items():
+            s = sector_map.get(ticker, "Unknown")
+            port_sector_weights[s] = port_sector_weights.get(s, 0) + weight
+            
+        for ticker, weight in benchmark_weights.items():
+            s = sector_map.get(ticker, "Unknown")
+            bench_sector_weights[s] = bench_sector_weights.get(s, 0) + weight
+            
+        all_sectors = sorted(list(set(list(port_sector_weights.keys()) + list(bench_sector_weights.keys()))))
+        
+        fig_sector = go.Figure(data=[
+            go.Bar(name='Benchmark', x=all_sectors, y=[bench_sector_weights.get(s, 0)*100 for s in all_sectors], marker_color="#94a3b8"),
+            go.Bar(name='Portfolio', x=all_sectors, y=[port_sector_weights.get(s, 0)*100 for s in all_sectors], marker_color="#34d399")
+        ])
+        
+        fig_sector.update_layout(
+            title="Sector Allocation (%)",
+            template="plotly_dark",
+            barmode='group',
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            margin=dict(l=20, r=20, t=40, b=20),
+            showlegend=False
+        )
+        st.plotly_chart(fig_sector, use_container_width=True)
 
     st.divider()
 

@@ -171,7 +171,10 @@ class QuantScaleSystem:
         return {
             "optimization": opt_result,
             "attribution": attribution,
-            "commentary": commentary
+            "commentary": commentary,
+            "market_data": returns,
+            "benchmark_weights": benchmark_weights,
+            "sector_map": sector_map
         }
 
 if __name__ == "__main__":
