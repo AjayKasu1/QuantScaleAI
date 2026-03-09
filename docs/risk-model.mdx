@@ -1,0 +1,37 @@
+---
+title: "Risk Model"
+description: "Ledoit-Wolf shrinkage covariance estimation for high-dimensional portfolios."
+---
+
+# Risk Model
+
+The `RiskModel` (located in `analytics/risk_model.py`) computes the covariance matrix of asset returns. This is the mathematical heart of the optimization engine.
+
+## The Problem with Sample Covariance
+
+When the number of assets $N \approx 500$ is comparable to the number of historical trading days $T$, the standard sample covariance matrix becomes **ill-conditioned**. Extreme, spurious correlations between assets lead to highly unstable portfolio weights.
+
+## Ledoit-Wolf Shrinkage
+
+The solution is to "shrink" the empirical covariance matrix toward a more structured target matrix, canceling out statistical noise.
+
+```python
+from sklearn.covariance import LedoitWolf
+
+def compute_covariance_matrix(self, returns: pd.DataFrame) -> pd.DataFrame:
+    lw = LedoitWolf()
+    X = returns.values  # Shape: (n_days, n_tickers)
+    lw.fit(X)
+    cov_matrix = lw.covariance_
+    return pd.DataFrame(cov_matrix, index=returns.columns, columns=returns.columns)
+```
+
+## Input Requirements
+
+<Note>
+The `returns` DataFrame must be stationary daily returns (e.g., generated via `price_df.pct_change().dropna()`), not raw prices.
+</Note>
+
+## Output
+
+A symmetric, positive semi-definite (N x N) covariance matrix with ticker labels on both axes. This is passed directly into the CVXPY `cp.quad_form()` objective in the Portfolio Optimizer.

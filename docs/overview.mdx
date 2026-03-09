@@ -1,0 +1,43 @@
+---
+title: "Project Overview"
+description: "A high-level look at the QuantScale AI architecture and directory structure."
+---
+
+# Architecture
+
+The repository follows a clean, highly modular Domain-Driven Design (DDD) emphasizing separation of concerns.
+
+## Directory Structure
+
+```text
+QuantScale AI/
+├── ai/                 # LLM Integration and Prompt Engineering
+├── analytics/          # Core Quantitative and Financial Math
+├── api/                # FastAPI routing and static frontend serving
+├── core/               # Data Transfer Objects (DTOs) and Pydantic Schemas
+├── data/               # Market Data ingestion and caching
+├── streamlit_app.py    # Main active frontend application
+├── main.py             # Pipeline Orchestrator (The QuantScaleSystem facade)
+├── config.py           # Environment variables and application settings
+└── Dockerfile          # Containerization for Hugging Face Spaces
+```
+
+## Core Responsibility
+
+<AccordionGroup>
+  <Accordion title="ai/">
+    LLM Integration (Bytez API), intent parsing, and attribution narrative generation.
+  </Accordion>
+  <Accordion title="analytics/">
+    Quantitative math: Ledoit-Wolf risk modeling, Brinson-Fachler attribution, and tax-loss harvesting logic.
+  </Accordion>
+  <Accordion title="api/">
+    FastAPI endpoints and static UI assets.
+  </Accordion>
+  <Accordion title="core/">
+    Pydantic schemas and shared data models.
+  </Accordion>
+  <Accordion title="data/">
+    Market data fetchers (`yfinance`), caching, and CVXPY portfolio optimization.
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,41 @@
+---
+title: "Tax-Loss Harvesting"
+description: "Automated identification of harvesting opportunities while avoiding IRS wash sales."
+---
+
+# Tax-Loss Harvesting Engine
+
+The `TaxEngine` (located in `analytics/tax_module.py`) continuously scans a deployed portfolio for positions that have declined beyond a configurable threshold, then suggests highly correlated replacements to maintain factor exposure.
+
+<Warning>
+  In the current demo build, the TaxEngine is **not actively invoked** from `run_pipeline`. It is architecturally wired and fully tested for future brokerage integrations.
+</Warning>
+
+## Triggering Logic
+
+A `TaxLot` is flagged when its unrealized loss exceeds **-10%**:
+
+```python
+if lot.loss_percentage <= -0.10:
+    proxy = self.find_proxy(lot.symbol, sector, candidates, correlation_matrix)
+    opp = HarvestOpportunity(
+        sell_ticker=lot.symbol,
+        buy_proxy_ticker=proxy,
+        quantity=lot.quantity,
+        estimated_loss_harvested=abs(lot.unrealized_pl),
+        ...
+    )
+```
+
+## Wash-Sale Defense
+
+The `check_wash_sale_rule` method scans the transaction ledger for any purchase of the **same** ticker within ± 30 days of the proposed sale. If found, the opportunity is suppressed.
+
+## Proxy Selection
+
+`find_proxy` runs a two-stage selection:
+
+1. **Sector Filter**: Narrows candidates to stocks in the same GICS sector.
+2. **Correlation Ranking**: Uses the empirical correlation matrix to identify the highest Pearson-correlated peer (e.g., swap `COST` for `WMT`).
+
+This preserves the portfolio's tracking error while unlocking a realized tax loss.

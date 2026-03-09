@@ -1,0 +1,56 @@
+---
+title: "Portfolio Optimization"
+description: "Mathematical foundations of the QuantScale AI QP solver."
+---
+
+# Optimization Engine
+
+The `PortfolioOptimizer` class (located in `data/optimizer.py`) translates business logic into hard mathematical limits using CVXPY.
+
+## The Objective Function
+
+The goal is to minimize **Tracking Error Variance (TEV)** against the benchmark.
+
+The objective is:
+$$ \min_{w} \ (w - w_b)^T \Sigma (w - w_b) $$
+
+Where:
+- $w$ is the portfolio weights vector.
+- $w_b$ is the benchmark weights vector.
+- $\Sigma$ is the shrunk covariance matrix.
+
+## Constraints
+
+<Steps>
+  <Step title="Fully Invested">
+    $$ \sum w_i = 1 $$ (No cash drag).
+  </Step>
+  <Step title="Long Only">
+    $$ w_i \ge 0 $$ (No shorting).
+  </Step>
+  <Step title="Exclusions">
+    For any excluded asset $k$, $$ w_k = 0 $$.
+  </Step>
+  <Step title="Concentration Limits">
+    $$ w_i \le \max\_cap $$ (Prevents individual stock risk).
+  </Step>
+</Steps>
+
+## Implementation
+
+```python
+# Variables
+w = cp.Variable(n_assets)
+
+# Objective
+active_weights = w - w_b
+tracking_error_variance = cp.quad_form(active_weights, covariance_matrix.values)
+objective = cp.Minimize(tracking_error_variance)
+
+# Apply Hard Exclusions
+if excluded_indices:
+     constraints.append(w[excluded_indices] == 0)
+
+prob = cp.Problem(objective, constraints)
+prob.solve()
+```

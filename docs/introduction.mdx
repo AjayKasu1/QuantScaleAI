@@ -1,0 +1,35 @@
+---
+title: "Introduction"
+description: "Welcome to QuantScale AI - An advanced Direct Indexing & Attribution Engine."
+---
+
+# Overview
+
+**QuantScale AI** is an advanced, AI-native Direct Indexing and Portfolio Attribution platform. It empowers portfolio managers, quantitative analysts, and individual investors to deploy sophisticated, custom-indexed portfolios that track a designated benchmark (e.g., the S&P 500) while programmatically excluding specific constraints—such as ESG-prohibited sectors or individual companies.
+
+At its core, the engine combines natural language processing (NLP) for intent parsing, convex optimization for tracking error minimization, and large language models (LLMs) for generating mathematically grounded, C-suite ready performance attribution reports.
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="NLP Search" icon="magnifying-glass">
+    "Optimize my $100k portfolio but exclude Energy and AMZN" - the LLM intent parser robustly maps this to systematic GICS sectors and tickers.
+  </Card>
+  <Card title="Convex Optimizer" icon="calculator">
+    Employs quadratic programming (via `cvxpy`) to minimize tracking error volatility against the benchmark.
+  </Card>
+  <Card title="Risk Model" icon="shield-halved">
+    Utilizes empirical covariance estimation with Ledoit-Wolf shrinkage to handle high-dimensional asset universes.
+  </Card>
+  <Card title="Brinson Attribution" icon="chart-line">
+    Mathematically decomposes active return (Alpha) into Allocation (sector-level) and Selection (stock-picking) effects.
+  </Card>
+</CardGroup>
+
+## AI Layer
+
+Translates the hard math from the attribution tables into professional, non-hallucinating narrative commentary using strict rule-based prompt engineering via the Bytez AI API.
+
+## Tax-Loss Harvesting
+
+An embedded module designed to continuously scan for lots dropping below a 10% threshold to suggest highly correlated proxy swaps, avoiding wash-sale violations.

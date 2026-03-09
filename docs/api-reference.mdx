@@ -1,0 +1,68 @@
+---
+title: "API Reference"
+description: "REST API endpoints for QuantScale AI."
+---
+
+# API Reference
+
+The FastAPI server is defined in `api/app.py`. All requests and responses are JSON.
+
+## Endpoints
+
+### `GET /health`
+
+Liveness probe for container orchestration.
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "service": "QuantScale AI Direct Indexing"
+}
+```
+
+---
+
+### `GET /`
+
+Serves the static web UI (`api/static/index.html`).
+
+---
+
+### `POST /optimize`
+
+The primary optimization endpoint. Generates a portfolio, performs attribution, and returns AI commentary.
+
+**Request Body:**
+
+```json
+{
+  "client_id": "User_001",
+  "initial_investment": 100000.0,
+  "excluded_sectors": ["Energy"],
+  "excluded_tickers": ["TSLA"],
+  "max_weight": 0.05,
+  "benchmark": "^GSPC",
+  "user_prompt": "Optional raw text if sectors/tickers not pre-parsed"
+}
+```
+
+**Response:**
+
+```json
+{
+  "client_id": "User_001",
+  "allocations": {
+    "AAPL": 0.0721,
+    "MSFT": 0.0689,
+    "NVDA": 0.0432,
+    "...": "..."
+  },
+  "tracking_error": 0.000398,
+  "attribution_narrative": "Portfolio Analysis Update - March 09, 2026..."
+}
+```
+
+<Tip>
+  If `user_prompt` is provided and `excluded_sectors` is empty, the system automatically runs the NLP Intent Parser to extract sectors before optimizing.
+</Tip>

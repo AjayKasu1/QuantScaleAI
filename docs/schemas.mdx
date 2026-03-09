@@ -1,0 +1,47 @@
+---
+title: "Data Models & Schemas"
+description: "Pydantic models and structural definitions for QuantScale AI."
+---
+
+# Core Schemas
+
+The application relies heavily on `pydantic` for serialization, validation, and schema generation located in `core/schema.py`.
+
+## `OptimizationRequest`
+
+The primary intake payload representing the client's parameters.
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `client_id` | `str` | Unique identifier for the transaction. |
+| `initial_investment` | `float` | Capital allocation (default `100000.0`). |
+| `excluded_sectors` | `List[str]` | Pre-parsed GICS sectors to ban. |
+| `excluded_tickers` | `List[str]` | Specific companies to ban. |
+| `max_weight` | `Optional[float]` | Concentration limit (e.g., `0.05`). |
+| `strategy` | `Optional[str]` | Filtering logic (e.g., `'smallest_market_cap'`). |
+| `benchmark` | `str` | Target index (default `^GSPC`). |
+| `user_prompt` | `Optional[str]` | Raw NLP string for fallback processing. |
+
+## `OptimizationResult`
+
+Output of the Convex Optimizer.
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `weights` | `Dict[str, float]` | Ticker -> Weight (validates out weights < 0.0001). |
+| `tracking_error` | `float` | The projected volatility of the active return. |
+| `status` | `str` | CVXPY solver status (e.g., `"optimal"`). |
+
+## `AttributionReport`
+
+Brinson-Fachler mathematical decomposition.
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `allocation_effect` | `float` | Sector-level active return. |
+| `selection_effect` | `float` | Stock-level active return (includes interaction). |
+| `total_active_return` | `float` | Total Alpha. |
+| `top_contributors` | `List[Dict]` | JSON array representing the contributor Truth Table. |
+| `top_detractors` | `List[Dict]` | JSON array representing the detractor Truth Table. |
+| `sector_exposure` | `List[Dict]` | JSON array mapping sector Overweights/Underweights. |
+| `narrative` | `str` | Raw skeleton text. |

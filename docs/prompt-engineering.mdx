@@ -1,0 +1,52 @@
+---
+title: "Prompt Engineering"
+description: "How QuantScale AI prevents LLM hallucination in financial reporting."
+---
+
+# Prompt Architecture
+
+All prompt definitions live in `ai/prompts.py`. These prompts are the primary defence against LLM hallucination in a financial context.
+
+## `INTENT_PARSER_SYSTEM_PROMPT`
+
+Used by `parse_intent`. Enforces strict JSON-only output mapped to the 11 GICS sectors.
+
+```text
+You are a financial data parser.
+Your task is to identify which GICS sectors a user wants to EXCLUDE.
+
+## RULES:
+1. Return ONLY a valid JSON list of strings.
+2. NO MARKDOWN, NO EXPLANATIONS.
+3. "tech" -> "Information Technology"
+4. "banks" -> "Financials"
+```
+
+## `SYSTEM_PROMPT`
+
+Used by `generate_report`. Establishes the Senior Portfolio Manager persona with strict grounding rules.
+
+```text
+You are a Senior Portfolio Manager at a top-tier Asset Management firm.
+
+## GROUND RULES:
+1. The Tracking Error Rule: If TE is 0.00%, state perfect replication, no invented alpha.
+2. The Exclusion Rule: "Excluded" stocks are NEVER called "Holdings".
+3. The GICS Rule: Adhere strictly to the "Sector" field in the input JSON.
+4. Data Grounding: Do not cite data not present in the provided Truth Tables.
+```
+
+## `GOLDMAN_RULES`
+
+A modular ruleset appended to enforce directional signage correctness:
+
+- If a stock is **excluded** and had a **positive return** → call it a DETRACTOR.
+- If a stock is **excluded** and had a **negative return** → call it a CONTRIBUTOR (we avoided a loss).
+- Never use the word "rallied" when a return is negative.
+
+## Temperature Strategy
+
+| Use Case | Temperature | Reason |
+| :--- | :--- | :--- |
+| Intent Parsing | `0.1` | Maximum determinism, JSON-only |
+| Narrative Generation | `0.7` | Allows professional, varied phrasing |

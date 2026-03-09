@@ -1,0 +1,65 @@
+---
+title: "Deployment"
+description: "How to deploy QuantScale AI to Hugging Face Spaces or any Docker host."
+---
+
+# Deployment Guide
+
+## Hugging Face Spaces (Live)
+
+The application is already deployed at:
+
+**[https://huggingface.co/spaces/AJAYKASU/QuantScaleAI](https://huggingface.co/spaces/AJAYKASU/QuantScaleAI)**
+
+The Space runs a Streamlit server on port `7860`.
+
+### Pushing Updates
+
+All changes are deployed via Git push to the `hf_space` remote:
+
+```bash
+git push hf_space main
+```
+
+## Docker
+
+A `Dockerfile` is included for any Docker-compatible host.
+
+**Build & Run:**
+
+```bash
+docker build -t quantscale-ai .
+docker run -p 7860:7860 -e BYTEZ_API_KEY=your_key_here quantscale-ai
+```
+
+### Dockerfile Details
+
+```dockerfile
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 7860
+
+CMD ["streamlit", "run", "streamlit_app.py", \
+     "--server.port=7860", \
+     "--server.address=0.0.0.0", \
+     "--server.headless=true"]
+```
+
+## Environment Variables
+
+| Variable | Required | Description |
+| :--- | :--- | :--- |
+| `BYTEZ_API_KEY` | ✅ Yes | Bytez AI API key for LLM calls |
+| `HF_TOKEN` | Optional | Hugging Face token (unused in current build) |
+| `LOG_LEVEL` | Optional | Logging verbosity (default: `INFO`) |
+
+<Warning>
+  Never commit your `.env` file to git. Add it to `.gitignore` to prevent API key leakage.
+</Warning>

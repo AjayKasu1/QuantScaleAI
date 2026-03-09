@@ -1,0 +1,44 @@
+---
+title: "AI & Reporting Layer"
+description: "Integrating Bytez AI for natural language intent parsing and institutional reporting."
+---
+
+# AI Integration
+
+QuantScale AI uses the **Bytez API** (specifically Llama-3-8B-Instruct) for two critical functions:
+
+## 1. Intent Parsing
+
+Translates raw user prompts into structured GICS sector and ticker exclusions.
+
+```python
+# ai/ai_reporter.py
+def parse_intent(self, user_prompt: str) -> list:
+    # Uses low temperature (0.1) for determinism
+    content = self._call_bytez(messages, temperature=0.1)
+    # Regex extraction to safely isolate JSON list
+    match = re.search(r'\[.*\]', content.strip(), re.DOTALL)
+    return json.loads(match.group(0))
+```
+
+## 2. Narrative Generation
+
+The `generate_report` method takes the finished Attribution Truth Tables and converts them into a professional narrative.
+
+### Guardrails
+
+<Check>
+  **The Tracking Error Rule**: If TE = 0.00%, the AI confirms full replication and avoids inventing alpha.
+</Check>
+<Check>
+  **The Exclusion Rule**: Status: Excluded names are NEVER referred to as "Holdings".
+</Check>
+<Check>
+  **Data Grounding**: The AI is forbidden from citing any data not present in the provided JSON Truth Tables.
+</Check>
+
+## Tech Stack
+
+- **Model**: `meta-llama/Meta-Llama-3-8B-Instruct`
+- **Provider**: Bytez API
+- **Latency**: ~1.5s for narrative generation.

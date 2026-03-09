@@ -1,0 +1,72 @@
+{
+    "name": "QuantScale AI",
+    "logo": {
+        "light": "/logo/light.svg",
+        "dark": "/logo/dark.svg"
+    },
+    "favicon": "/favicon.png",
+    "colors": {
+        "primary": "#3b82f6",
+        "light": "#60a5fa",
+        "dark": "#1e293b"
+    },
+    "topbarLinks": [
+        {
+            "name": "Support",
+            "url": "mailto:ajay@example.com"
+        }
+    ],
+    "topbarCtaButton": {
+        "name": "View on GitHub",
+        "url": "https://github.com/AjayKasu1/QuantScaleAI"
+    },
+    "tabs": [
+        {
+            "name": "Documentation",
+            "url": "docs"
+        }
+    ],
+    "navigation": [
+        {
+            "group": "Getting Started",
+            "pages": [
+                "docs/introduction",
+                "docs/quickstart"
+            ]
+        },
+        {
+            "group": "Architecture",
+            "pages": [
+                "docs/overview",
+                "docs/pipeline",
+                "docs/schemas"
+            ]
+        },
+        {
+            "group": "Core Engines",
+            "pages": [
+                "docs/optimization",
+                "docs/attribution",
+                "docs/risk-model",
+                "docs/tax-harvesting"
+            ]
+        },
+        {
+            "group": "AI & NLP",
+            "pages": [
+                "docs/ai-layer",
+                "docs/prompt-engineering"
+            ]
+        },
+        {
+            "group": "Development",
+            "pages": [
+                "docs/api-reference",
+                "docs/deployment"
+            ]
+        }
+    ],
+    "footerSocials": {
+        "github": "https://github.com/AjayKasu1/QuantScaleAI"
+    }
+}

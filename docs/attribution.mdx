@@ -1,0 +1,39 @@
+---
+title: "Brinson Attribution"
+description: "Decomposing active performance into Allocation and Selection effects."
+---
+
+# Attribution Engine
+
+The `AttributionEngine` (located in `analytics/attribution.py`) implements the Brinson-Fachler model to explain why the portfolio deviated from the benchmark.
+
+## Brinson-Fachler Math
+
+1.  **Allocation Effect**: $(w_p - w_b) \times (R_b - R_{total\_benchmark})$
+    *   Measures the impact of over/underweighting a specific sector.
+2.  **Selection Effect**: $w_b \times (R_p - R_b)$
+    *   Measures the impact of better stock picking within a sector.
+3.  **Interaction Effect**: $(w_p - w_b) \times (R_p - R_b)$
+    *   The residual synergy between weighting and picking.
+
+## The Truth Table Logic
+
+To ensure the AI narrative is mathematically grounded, the engine generates a JSON "Truth Table" string for every asset.
+
+```json
+{
+  "Ticker": "XOM",
+  "Sector": "Energy",
+  "Status": "Excluded",
+  "Active_Contribution": "-0.0150",
+  "Return": "4.50%",
+  "Reasoning": "Drag (Missed Rally)"
+}
+```
+
+### Categorization
+
+- **Protected (Avoided Loss)**: Stock was excluded and its return was negative.
+- **Drag (Missed Rally)**: Stock was excluded and its return was positive.
+- **Value Add (Stock Picking)**: Overweight stock with a positive return.
+- **Detractor (Overweight Loser)**: Overweight stock with a negative return.
