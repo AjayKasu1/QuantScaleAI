@@ -112,7 +112,8 @@ class AIReporter:
 
     def generate_report(self, 
                         attribution_report: AttributionReport, 
-                        excluded_sector: str) -> str:
+                        excluded_sector: str,
+                        tracking_error: float = 0.0) -> str:
         """
         Constructs the prompt and calls the Bytez API to generate the commentary.
         """
@@ -130,7 +131,7 @@ Current Date: {current_date}
 Portfolio Metadata:
 - Sector Exclusions: {excluded_sector}
 - Alpha (Active Return): {attribution_report.total_active_return * 100:.2f}%
-- Total Tracking Error: {attribution_report.total_active_return * 100:.4f}%
+- Total Tracking Error: {tracking_error * 100:.4f}%
 - Full Replication Mode: {is_replication}
 
 ## DATA TABLES:

@@ -166,7 +166,11 @@ class QuantScaleSystem:
         exclusions_list = request.excluded_sectors + request.excluded_tickers
         excluded = ", ".join(exclusions_list) if exclusions_list else "None"
         
-        commentary = self.ai_reporter.generate_report(attribution, excluded)
+        commentary = self.ai_reporter.generate_report(
+            attribution_report=attribution, 
+            excluded_sector=excluded,
+            tracking_error=opt_result.tracking_error
+        )
         
         return {
             "optimization": opt_result,
